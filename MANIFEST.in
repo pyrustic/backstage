@@ -1,0 +1,3 @@
+recursive-include backstage *
+global-exclude *.py[cod]
+include VERSION

@@ -129,7 +129,7 @@ class HubHandler:
                                            "github_release_form.json")
         if not os.path.exists(github_release_form):
             return None
-        jason = Jason("github_release_form", location=backstage_data_path)
+        jason = Jason("github_release_form.json", location=backstage_data_path)
         if not jason.data:
             return None
         owner = jason.data["owner"]

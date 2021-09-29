@@ -140,32 +140,32 @@ def _add_json_data_files(target, app_pkg):
     backstage_data_path = os.path.join(backstage_path, "data")
     hubstore_path = os.path.join(pyrustic_data_path, "hubstore")
     # add init.json
-    jason = Jason("init", location=constant.BACKSTAGE_CONFIG_PATH)
+    jason = Jason("init.json", location=constant.BACKSTAGE_CONFIG_PATH)
     global_data = jason.data
-    Jason("init", default=global_data, location=backstage_config_path)
+    Jason("init.json", default=global_data, location=backstage_config_path)
     # add build.json
-    jason = Jason("build", location=constant.BACKSTAGE_CONFIG_PATH)
+    jason = Jason("build.json", location=constant.BACKSTAGE_CONFIG_PATH)
     global_data = jason.data
-    Jason("build", default=global_data, location=backstage_config_path)
+    Jason("build.json", default=global_data, location=backstage_config_path)
     # add release.json
-    jason = Jason("release", location=constant.BACKSTAGE_CONFIG_PATH)
+    jason = Jason("release.json", location=constant.BACKSTAGE_CONFIG_PATH)
     global_data = jason.data
-    Jason("release", default=global_data, location=backstage_config_path)
+    Jason("release.json", default=global_data, location=backstage_config_path)
     # add build_report.json
-    Jason("build_report", default=[], location=backstage_report_path)
+    Jason("build_report.json", default=[], location=backstage_report_path)
     # add release_report.json
-    Jason("release_report", default=[], location=backstage_report_path)
+    Jason("release_report.json", default=[], location=backstage_report_path)
     # add github_release_form.json in backstage/data
     default = dict().fromkeys(("owner", "repository", "release_name",
                                "tag_name", "target_commitish", "description",
                                "is_prerelease", "is_draft", "upload_asset",
                                "asset_name", "asset_label"))
-    Jason("github_release_form", default=default, location=backstage_data_path)
+    Jason("github_release_form.json", default=default, location=backstage_data_path)
     # add img.json for Hubstore
-    Jason("img", default={"small_img": None, "large_img": None},
+    Jason("img.json", default={"small_img": None, "large_img": None},
           location=hubstore_path)
     # add promotion.json for Hubstore
-    Jason("promotion", default={}, location=hubstore_path)
+    Jason("promotion.json", default={}, location=hubstore_path)
 
 
 def _add_file(path, data):

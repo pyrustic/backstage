@@ -22,7 +22,7 @@ def _gen_build_report(target, app_pkg, version):
                                        "pyrustic_data",
                                        "backstage",
                                        "report")
-    jason = Jason("build_report", default=[],
+    jason = Jason("build_report.json", default=[],
                   location=backstage_data_path)
     cache = dict()
     cache["timestamp"] = int(time.time())

@@ -31,26 +31,26 @@ def _make_directory(path):
 def _init_config_files():
     # init.json
     default = ["backstage.script.init_project"]
-    Jason("init", default=default,
+    Jason("init.json", default=default,
           location=BACKSTAGE_CONFIG_PATH)
     # build.json
     default = ["backstage.script.run_tests",
                "backstage.script.build_project",
                "backstage.script.versioning"]
-    Jason("build", default=default,
+    Jason("build.json", default=default,
           location=BACKSTAGE_CONFIG_PATH)
     # release.json
     default = ["backstage.script.update_github_release_form",
                "backstage.script.github_release",
                "backstage.script.update_changelog"]
-    Jason("release", default=default,
+    Jason("release.json", default=default,
           location=BACKSTAGE_CONFIG_PATH)
 
 
 def _init_data_folder():
     # recent.json
     default = []
-    Jason("recent", default=default,
+    Jason("recent.json", default=default,
           location=BACKSTAGE_DATA_PATH)
     # cmd_history.txt
     path = os.path.join(BACKSTAGE_DATA_PATH,

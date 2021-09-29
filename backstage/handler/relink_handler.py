@@ -38,7 +38,7 @@ class RelinkHandler:
         return self._target
 
     def _process(self, args):
-        jason = Jason("recent", readonly=True,
+        jason = Jason("recent.json", readonly=True,
                       location=constant.BACKSTAGE_DATA_PATH)
         if not jason.data:
             print("- Empty -")

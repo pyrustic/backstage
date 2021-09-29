@@ -31,7 +31,7 @@ def get_release_description(target):
 def update_release_jayson(target, build_report,
                           backstage_data_path):
     version = build_report["app_version"]
-    jason = Jason("github_release_form", default=dict(),
+    jason = Jason("github_release_form.json", default=dict(),
                   location=backstage_data_path)
     # update owner
     if not jason.data.get("owner"):
@@ -77,7 +77,7 @@ def update_release_jayson(target, build_report,
 
 
 def get_latest_build_report(backstage_report_path):
-    jason = Jason("build_report", default=[],
+    jason = Jason("build_report.json", default=[],
                   location=backstage_report_path)
     latest_build_report = None
     try:

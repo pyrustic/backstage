@@ -52,7 +52,7 @@ class BuildHandler:
                                              "pyrustic_data",
                                              "backstage",
                                              "report")
-        jason = Jason("build_report", readonly=True,
+        jason = Jason("build_report.json", readonly=True,
                       location=backstage_report_path)
         if not jason.data:
             return True

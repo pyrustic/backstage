@@ -21,7 +21,7 @@ def _get_version(target, app_pkg):
                                          "pyrustic_data",
                                          "backstage",
                                          "report")
-    jason = Jason("build_report", readonly=True,
+    jason = Jason("build_report.json", readonly=True,
                   location=backstage_report_path)
     if not jason.data:
         raise backstage.ReleaseError("Missing valid 'build_report.json' !")
@@ -35,7 +35,7 @@ def _update_build_report(target, app_pkg):
                                          "pyrustic_data",
                                          "backstage",
                                          "report")
-    jason = Jason("build_report",
+    jason = Jason("build_report.json",
                   location=backstage_report_path)
     if not jason.data:
         raise backstage.ReleaseError("Missing valid 'build_report.json' !")
@@ -52,7 +52,7 @@ def _publish(kurl, target, app_pkg):
                                      "github_release_form.json")
     if not os.path.exists(release_form_path):
         raise backstage.MissingReleaseFormError
-    jason = Jason("github_release_form", location=backstage_data_path)
+    jason = Jason("github_release_form.json", location=backstage_data_path)
     owner = jason.data.get("owner")
     repository = jason.data.get("repository")
     release_name = jason.data.get("release_name")

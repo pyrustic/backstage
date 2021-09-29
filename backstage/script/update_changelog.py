@@ -23,7 +23,7 @@ def get_latest_build_version(target, app_pkg):
     backstage_report_path = os.path.join(target, app_pkg,
                                          "pyrustic_data",
                                          "backstage", "report")
-    jason = Jason("build_report", location=backstage_report_path)
+    jason = Jason("build_report.json", location=backstage_report_path)
     latest_build_report = jason.data[-1]
     return latest_build_report["app_version"]
 

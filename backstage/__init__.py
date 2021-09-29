@@ -93,7 +93,7 @@ def link(target):
 
     This function will edit the "target" value and the "recent" list.
     """
-    jason = Jason("recent",
+    jason = Jason("recent.json",
                   location=constant.BACKSTAGE_DATA_PATH)
     recent_list = jason.data
     for i, item in enumerate(recent_list.copy()):
@@ -112,7 +112,7 @@ def recent():
     """
     Returns a LIFO-sorting list of recently linked targets.
     """
-    jason = Jason("recent", readonly=True,
+    jason = Jason("recent.json", readonly=True,
                   location=constant.BACKSTAGE_DATA_PATH)
     return [*reversed(jason.data)]
 
@@ -464,9 +464,9 @@ def hooks_runner(operation, target):
     local_config_file = os.path.join(local_config,
                                      "{}.json".format(operation))
     if os.path.isfile(local_config_file):
-        jason = Jason("init", default=[], location=local_config)
+        jason = Jason("init.json", default=[], location=local_config)
     else:
-        jason = Jason(operation, default=[], location=constant.BACKSTAGE_CONFIG_PATH)
+        jason = Jason("{}.json".format(operation), default=[], location=constant.BACKSTAGE_CONFIG_PATH)
     for hook in jason.data:
         cmd = ["-m", hook]
         return_code = run(cmd, cwd=target)

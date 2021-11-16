@@ -5,7 +5,7 @@
 This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io).
 
 <!-- Quick Links -->
-[Start a project](#start-a-project) | [Project structure](#project-structure) | [Installation](#installation) | [Reference](https://github.com/pyrustic/backstage/tree/master/docs/reference#readme)
+[Start a project](#start-a-project) | [Project structure](#project-structure) | [Installation](#installation) | [Reference](https://github.com/pyrustic/backstage/tree/master/docs/modules#readme)
 
 ## Overview
 This is an overview of available commands in `Backstage`. You can learn more about any command with `help <command>`.

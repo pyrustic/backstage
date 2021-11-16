@@ -1,7 +1,7 @@
 import os
 import os.path
 import time
-import backstage
+import backstage as api
 from datetime import datetime
 from shared import Jason
 
@@ -22,10 +22,10 @@ def get_date():
 def get_latest_build_version(target, app_pkg):
     backstage_report_path = os.path.join(target, app_pkg,
                                          "pyrustic_data",
-                                         "backstage", "report")
+                                         "backstage", "data")
     jason = Jason("build_report.json", location=backstage_report_path)
-    latest_build_report = jason.data[-1]
-    return latest_build_report["app_version"]
+    latest_build_report = jason.data[0]
+    return latest_build_report["version"]
 
 
 def update_changelog(path, data, version):
@@ -49,7 +49,7 @@ def update_changelog(path, data, version):
 
 def main():
     target = os.getcwd()
-    app_pkg = backstage.get_app_pkg(target)
+    app_pkg = api.get_app_pkg(target)
     version = get_latest_build_version(target, app_pkg)
     # cut LATEST_RELEASE.md content and then log it in CHANGELOG.md
     latest_release_path = os.path.join(target, "LATEST_RELEASE.md")

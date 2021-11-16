@@ -1,16 +1,21 @@
 import os
 import os.path
-import backstage
+import backstage as api
+from backstage import error
 
 
 def main():
     target = os.getcwd()
-    version = backstage.get_version(target)
-    app_pkg = backstage.get_app_pkg(target)
+    version = api.get_version(target)
+    app_pkg = api.get_app_pkg(target)
     try:
-        backstage.build(target, app_pkg)
-    except backstage.BuildError:
+        api.build(target, app_pkg)
+    except error.BuildError:
         print("Failed to build a distribution package")
+        exit(1)
+    except Exception:
+        print("Unknown error while building a distribution package")
+        exit(1)
     else:
         print("Successfully built '{}' v{} !".format(app_pkg, version))
 

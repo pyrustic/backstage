@@ -1,12 +1,12 @@
 import os
-import backstage
+import backstage as api
 
 
 def main():
-    target = os.getcwd()
-    app_pkg = backstage.get_app_pkg(target)
-    backstage.init(target, app_pkg)
-    print("Successfully initialized !")
+    project_dir = os.getcwd()
+    app_pkg = api.get_app_pkg(project_dir)
+    api.initialize(project_dir, app_pkg)
+    print("Project successfully initialized !")
 
 
 if __name__ == "__main__":

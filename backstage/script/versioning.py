@@ -1,11 +1,11 @@
 import os
 import os.path
-import backstage
+import backstage as api
 
 
 def main():
     target = os.getcwd()
-    cur_version = backstage.get_version(target)
+    cur_version = api.get_version(target)
     print("")
     print("What is the next version of your project ?")
     print("Type 'maj', 'min' or 'rev' for a fast version increment.")
@@ -13,8 +13,8 @@ def main():
     new_version = input("Submit the next version: ")
     if not new_version:
         new_version = "rev"
-    version = backstage.interpret_version(cur_version, new_version)
-    backstage.set_version(target, version)
+    version = api.interpret_version(cur_version, new_version)
+    api.set_version(target, version)
 
 
 if __name__ == "__main__":

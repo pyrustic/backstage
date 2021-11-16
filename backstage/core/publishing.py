@@ -3,20 +3,22 @@ import os.path
 from shared import Jason
 import backstage
 from backstage.core import github_client
+from backstage.core import funcs
 
 
-def publish(kurl, target, app_pkg):
-    version = _get_version(target, app_pkg)
+def publish(kurl, project_dir, app_pkg):
+    app_pkg = app_pkg if app_pkg else funcs.get_app_pkg(project_dir)
+    version = _get_version(project_dir, app_pkg)
     # publish
     try:
-        data = _publish(kurl, target, app_pkg)
+        data = _publish(kurl, project_dir, app_pkg)
     except Exception as e:
         raise backstage.ReleaseError
     return data
 
 
-def _get_version(target, app_pkg):
-    backstage_report_path = os.path.join(target,
+def _get_version(project_dir, app_pkg):
+    backstage_report_path = os.path.join(project_dir,
                                          app_pkg,
                                          "pyrustic_data",
                                          "backstage",
@@ -29,8 +31,8 @@ def _get_version(target, app_pkg):
     return latest_build_report["app_version"]
 
 
-def _update_build_report(target, app_pkg):
-    backstage_report_path = os.path.join(target,
+def _update_build_report(project_dir, app_pkg):
+    backstage_report_path = os.path.join(project_dir,
                                          app_pkg,
                                          "pyrustic_data",
                                          "backstage",
@@ -44,8 +46,8 @@ def _update_build_report(target, app_pkg):
     jason.save()
 
 
-def _publish(kurl, target, app_pkg):
-    backstage_data_path = os.path.join(target, app_pkg,
+def _publish(kurl, project_dir, app_pkg):
+    backstage_data_path = os.path.join(project_dir, app_pkg,
                                        "pyrustic_data",
                                        "backstage", "data")
     release_form_path = os.path.join(backstage_data_path,
@@ -57,13 +59,13 @@ def _publish(kurl, target, app_pkg):
     repository = jason.data.get("repository")
     release_name = jason.data.get("release_name")
     tag_name = jason.data.get("tag_name")
-    target_commitish = jason.data.get("target_commitish")
+    project_dir_commitish = jason.data.get("project_dir_commitish")
     description = jason.data.get("description")
     prerelease = jason.data.get("is_prerelease")
     draft = jason.data.get("is_draft")
     upload_asset = jason.data.get("upload_asset")
     asset_name = jason.data.get("asset_name")
-    asset_path = os.path.join(target, "dist", asset_name)
+    asset_path = os.path.join(project_dir, "dist", asset_name)
     asset_path = None if not os.path.exists(asset_path) else asset_path
     asset_label = jason.data.get("asset_label")
     if (not release_name or not tag_name
@@ -71,11 +73,11 @@ def _publish(kurl, target, app_pkg):
         raise backstage.InvalidReleaseFormError
     github_release = github_client.Release(kurl, owner, repository)
     data = github_release.publish(release_name, tag_name,
-                                  target_commitish, description,
+                                  project_dir_commitish, description,
                                   prerelease, draft, upload_asset,
                                   asset_path, asset_name, asset_label)
     if data["meta_code"] == 0:
-        _update_build_report(target, app_pkg)
+        _update_build_report(project_dir, app_pkg)
     return data
 
 

@@ -4,6 +4,56 @@ import shutil
 from kurl import Kurl
 
 
+def get_app_pkg(project_dir):
+    """
+    This function extracts the application package name from a project_dir path.
+    Basically it extracts the basename from the path then turns dashes "-" into
+    "underscores" "_".
+
+    Parameters:
+        - project_dir: str, path to the project_dir project
+
+    Returns: str, the application package name.
+    """
+    if not project_dir:
+        return None
+    basename = os.path.basename(project_dir)
+    cache = basename.split("-")
+    app_pkg = "_".join(cache)
+    return app_pkg
+
+
+def get_project_name(project_dir):
+    """Returns the project name"""
+    return os.path.basename(project_dir)
+
+
+def ask_for_confirmation(message, default="y"):
+    """
+    Use this function to request a confirmation from the user.
+
+    Parameters:
+        - message: str, the message to display
+        - default: str, either "y" or "n" to tell "Yes by default"
+        or "No, by default".
+
+    Returns: a boolean, True or False to reply to the request.
+
+    Note: this function will append a " (y/N): " or " (Y/n): " to the message.
+    """
+    cache = "Y/n" if default == "y" else "y/N"
+    user_input = None
+    try:
+        user_input = input("{} ({}): ".format(message, cache))
+    except EOFError as e:
+        pass
+    if not user_input:
+        user_input = default
+    if user_input.lower() == "y":
+        return True
+    return False
+
+
 def wheels_assets(target):
     dist_folder = os.path.join(target,
                                "dist")
@@ -93,14 +143,18 @@ def build_package(target, package_name, prefix=""):
     dir = package_name_to_path(target, prefix) if prefix else target
     for item in splitted:
         dir = os.path.join(dir, item)
-        if os.path.exists(dir):
-            continue
-        try:
-            os.mkdir(dir)
-            with open(os.path.join(dir, "__init__.py"), "w") as file:
+        if not os.path.exists(dir):
+            try:
+                os.mkdir(dir)
+            except Exception as e:
                 pass
-        except Exception as e:
-            return None
+        init_file = os.path.join(dir, "__init__.py")
+        if not os.path.exists(init_file):
+            try:
+                with open(init_file, "w") as file:
+                    pass
+            except Exception as e:
+                pass
     if not os.path.isdir(dir):
         return None
     return dir

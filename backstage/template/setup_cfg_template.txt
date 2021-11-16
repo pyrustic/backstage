@@ -23,7 +23,22 @@ packages = find:
 include_package_data = true
 zip_safe = false
 install_requires =
-    pyrustic
+    tkutil
+    viewable
+    megawidget
+    tkstyle
+    cyberpunk-theme
+    winter-theme
+    threadom
+    suggestion
+    litemark
+    kurl
+    litedao
+    probed
+    shared
+    tkf
+    gaspium
+    backstage
 
 [options.entry_points]
 console_scripts =

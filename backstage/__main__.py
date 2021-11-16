@@ -1,21 +1,54 @@
-"""Pyrustic Project Manager entry point"""
-from backstage.cmdline import Cmdline
-from backstage import oneline
-import sys
 import os
+import sys
+import backstage as api
+from backstage import cli
+
+
+COMMANDS = {"setup": cli.setup, "init": cli.init,
+            "run": cli.run, "build": cli.build,
+            "release": cli.release, "version": cli.version}
 
 
 def main():
-    """
-    Pyrustic Project Manager launcher
-    Opens the interactive loop if there are not command line arguments
-    else starts backstage.oneline.command and uses os.getcwd() as target
-    """
-    argv = sys.argv
-    if len(argv) > 1:
-        oneline.command(argv[1:], target=os.getcwd())
+    project_dir = os.getcwd()
+    args = sys.argv[1:]
+    COMMANDS["help"] = help_handler
+    if not args:
+        help_handler(project_dir, *args)
+        return
+    command = args[0]
+    try:
+        COMMANDS[command](project_dir, *args[1:])
+    except KeyError as e:
+        msg = "Unknown command. Type 'help' !"
+        print(msg)
+
+
+def help_handler(project_dir, *args):
+    """Help me !"""
+    intro = ("""Project Backstage {}\n""".format(api.dist_version("backstage"))
+             + """Website: https://pyrustic.github.io\n"""
+             + """This software is part of the Pyrustic Open Ecosystem.\n""")
+    print("".join(intro))
+
+    print("Available commands")
+    print("==================")
+    print(" ".join(COMMANDS.keys()))
+    print()
+    print("Type 'help <command>' for more information.")
+    print()
+    if not args:
+        return
+    command = args[0]
+    try:
+        doc = COMMANDS[command].__doc__
+    except KeyError as e:
+        print("Unknown command")
     else:
-        Cmdline().cmdloop()
+        title = "Command - {}".format(command)
+        print(title)
+        print("="*len(title))
+        print(doc)
 
 
 if __name__ == "__main__":

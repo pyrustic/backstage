@@ -3,12 +3,38 @@ import os.path
 import sys
 
 
+def run_tests(project_dir):
+    """
+    Runs the tests in the project_dir.
+
+    Parameters:
+        - project_dir: str, path to the project_dir project
+
+    Returns: a tuple (bool, object). The bool indicate the success
+    (True) or the failure (False) of the tests.
+    The second item in the tuple can be None, an Exception instance, or a string.
+
+    Note: the tests should be located at $PROJECT_DIR/tests
+    """
+    tests_dir = os.path.join(project_dir, "tests")
+    tests_success = None
+    tests_result = None
+    if os.path.exists(tests_dir):
+        test_host = LiteTestRunner(tests_dir, project_dir)
+        tests_success, tests_result = test_host.run()
+    return tests_success, tests_result
+
+
 class LiteTestRunner:
-    def __init__(self, path, app_dir):
-        self._path = path
-        self._app_dir = app_dir
+    def __init__(self, tests_dir, project_dir):
+        self._tests_dir = tests_dir
+        self._project_dir = project_dir
 
     def run(self, failfast=True):
+        if not os.path.exists(self._tests_dir):
+            return False, "This tests directory doesn't exist: "
+        if not os.path.exists(self._project_dir):
+            return False, "This project directory doesn't exist: "
         reloader = _Reloader()
         reloader.save_state()
         cache = self._run(failfast)
@@ -16,10 +42,8 @@ class LiteTestRunner:
         return cache
 
     def _run(self, failfast):
-        if not os.path.exists(self._path):
-            return False, "This path doesn't exist"
         test_loader = unittest.TestLoader()
-        suite = test_loader.discover(self._path, top_level_dir=self._app_dir)
+        suite = test_loader.discover(self._tests_dir, top_level_dir=self._project_dir)
         result = unittest.TestResult()
         try:
             result.startTestRun()
@@ -29,6 +53,8 @@ class LiteTestRunner:
             return False, e
         finally:
             result.stopTestRun()
+        if suite.countTestCases() == 0:
+            return None, None
         if result.wasSuccessful():
             return True, None
         else:
@@ -47,7 +73,7 @@ class LiteTestRunner:
         if result.unexpectedSuccesses:
             for expected_failure in result.expectedFailures:
                 cache = "{}\n{}".format(expected_failure[0],
-                                            expected_failure[1])
+                                        expected_failure[1])
                 data.append(cache)
 
         return "".join(data)
@@ -62,5 +88,5 @@ class _Reloader:
 
     def restore_state(self):
         for x in sys.modules.copy().keys():
-            if not x in self._state:
+            if x not in self._state:
                 del sys.modules[x]

@@ -2,34 +2,69 @@ import os
 import os.path
 import pkgutil
 from shared import Jason
-from backstage.core import funcs
-from backstage import constant
+from backstage.core import funcs, constant
 
 
-def init(target, app_pkg):
-    # create package
-    _make_packages(target, app_pkg)
-    # create folders
-    _make_folders(target, app_pkg)
-    # add files
-    _add_files(target, app_pkg)
-    # add json data files
-    _add_json_data_files(target, app_pkg)
-
-
-def _make_packages(target, app_pkg):
-    packages = (app_pkg, "tests")
-    for package in packages:
-        funcs.build_package(target, package)
-
-
-def _make_folders(target, app_pkg):
-    # folders to make inside app_pkg
-    app_dir = os.path.join(target, app_pkg)
+def initialized(project_dir, app_pkg=None):
+    """Returns True if the project_dir is initialized, else returns False"""
+    app_pkg = app_pkg if app_pkg else funcs.get_app_pkg(project_dir)
+    tests = os.path.join(project_dir, "tests")
+    tests_init = os.path.join(tests, "__init__.py")
+    tests_main = os.path.join(tests, "__main__.py")
+    manifest = os.path.join(project_dir, "MANIFEST.in")
+    pyproject_toml = os.path.join(project_dir, "pyproject.toml")
+    readme = os.path.join(project_dir, "README.md")
+    setup_cfg = os.path.join(project_dir, "setup.cfg")
+    setup_py = os.path.join(project_dir, "setup.py")
+    version = os.path.join(project_dir, "VERSION")
+    gitignore = os.path.join(project_dir, ".gitignore")
+    app_dir = os.path.join(project_dir, app_pkg)
+    init_file = os.path.join(app_dir, "__init__.py")
+    main_file = os.path.join(app_dir, "__main__.py")
     pyrustic_data = os.path.join(app_dir, "pyrustic_data")
     backstage = os.path.join(pyrustic_data, "backstage")
-    hubstore = os.path.join(pyrustic_data, "hubstore")
-    folders = (backstage, hubstore)
+    backstage_hooking = os.path.join(backstage, "hooking")
+    backstage_hooking_init = os.path.join(backstage_hooking, "init.json")
+    backstage_hooking_build = os.path.join(backstage_hooking, "build.json")
+    backstage_hooking_release = os.path.join(backstage_hooking, "release.json")
+    backstage_data = os.path.join(backstage, "data")
+    backstage_data_build_report = os.path.join(backstage_data, "build_report.json")
+    # loop
+    items = (tests_init, tests_main, manifest, pyproject_toml, readme,
+             setup_cfg, setup_py, version,
+             gitignore, init_file, main_file, backstage_hooking_init,
+             backstage_hooking_build, backstage_hooking_release,
+             backstage_data_build_report)
+    for item in items:
+        if not os.path.isfile(item):
+            return False
+    return True
+
+
+def initialize(project_dir, app_pkg):
+    app_pkg = app_pkg if app_pkg else funcs.get_app_pkg(project_dir)
+    # create package
+    _make_packages(project_dir, app_pkg)
+    # create folders
+    _make_folders(project_dir, app_pkg)
+    # add files
+    _add_files(project_dir, app_pkg)
+    # add json data files
+    _add_json_data_files(project_dir, app_pkg)
+
+
+def _make_packages(project_dir, app_pkg):
+    packages = (app_pkg, "tests")
+    for package in packages:
+        funcs.build_package(project_dir, package)
+
+
+def _make_folders(project_dir, app_pkg):
+    # folders to make inside app_pkg
+    app_dir = os.path.join(project_dir, app_pkg)
+    pyrustic_data = os.path.join(app_dir, "pyrustic_data")
+    backstage = os.path.join(pyrustic_data, "backstage")
+    folders = (backstage, )
     for folder in folders:
         try:
             os.makedirs(folder)
@@ -37,141 +72,91 @@ def _make_folders(target, app_pkg):
             pass
 
 
-def _add_files(target, app_pkg):
+def _add_files(project_dir, app_pkg):
     resource_prefix = "template/"
-    app_dir = os.path.join(target, app_pkg)
-    # add VERSION
-    resource = resource_prefix + "version_template.txt"
-    dest_path = os.path.join(target, "VERSION")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
+    app_dir = os.path.join(project_dir, app_pkg)
     # add __main__.py
-    resource = resource_prefix + "main_template.txt"
-    dest_path = os.path.join(app_dir, "__main__.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
+    data = _get_data("backstage", resource_prefix,
+                     "main_template.txt")
     data = data.format(title=app_pkg)
-    _add_file(dest_path, data)
+    dest = os.path.join(app_dir, "__main__.py")
+    _add_file(data, dest)
+    # add tests/__main__.py
+    data = _get_data("backstage", resource_prefix,
+                     "tests_main_template.txt")
+    data = data.format(title=app_pkg)
+    dest = os.path.join(project_dir, "tests", "__main__.py")
+    _add_file(data, dest)
     # add .gitignore
-    resource = resource_prefix + "gitignore_template.txt"
-    dest_path = os.path.join(target, ".gitignore")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add LICENSE
-    #resource = resource_prefix + "license_template.txt"
-    #dest_path = os.path.join(target, "LICENSE")
-    #data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    #_add_file(dest_path, data)
+    data = _get_data("backstage", resource_prefix,
+                     "gitignore_template.txt")
+    dest = os.path.join(project_dir, ".gitignore")
+    _add_file(data, dest)
     # add README.md
-    resource = resource_prefix + "readme_template.txt"
-    dest_path = os.path.join(target, "README.md")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
+    data = _get_data("backstage", resource_prefix,
+                     "readme_template.txt")
+    dest = os.path.join(project_dir, "README.md")
+    _add_file(data, dest)
     # add MANIFEST.in
-    resource = resource_prefix + "manifest_template.txt"
-    dest_path = os.path.join(target, "MANIFEST.in")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
+    data = _get_data("backstage", resource_prefix,
+                     "manifest_template.txt")
     data = data.format(app_pkg=app_pkg)
-    _add_file(dest_path, data)
+    dest = os.path.join(project_dir, "MANIFEST.in")
+    _add_file(data, dest)
     # add setup.py
-    resource = resource_prefix + "setup_py_template.txt"
-    dest_path = os.path.join(target, "setup.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
+    data = _get_data("backstage", resource_prefix,
+                     "setup_py_template.txt")
+    dest = os.path.join(project_dir, "setup.py")
+    _add_file(data, dest)
     # add setup.cfg
-    resource = resource_prefix + "setup_cfg_template.txt"
-    dest_path = os.path.join(target, "setup.cfg")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    data = data.format(project_name=os.path.basename(target),
+    data = _get_data("backstage", resource_prefix,
+                     "setup_cfg_template.txt")
+    data = data.format(project_name=os.path.basename(project_dir),
                        app_pkg=app_pkg)
-    _add_file(dest_path, data)
+    dest = os.path.join(project_dir, "setup.cfg")
+    _add_file(data, dest)
     # add pyproject.toml
-    resource = resource_prefix + "pyproject_template.txt"
-    dest_path = os.path.join(target, "pyproject.toml")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add LATEST_RELEASE.Md
-    resource = resource_prefix + "latest_release_template.txt"
-    dest_path = os.path.join(target, "LATEST_RELEASE.md")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add CHANGELOG.Md
-    resource = resource_prefix + "changelog_template.txt"
-    dest_path = os.path.join(target, "CHANGELOG.md")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    """
-    # add ante_build_hook.py
-    resource = resource_prefix + "ante_build_hook_template.txt"
-    dest_path = os.path.join(target, app_pkg,
-                             "hooking",
-                             "ante_build_hook.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add post_build_hook.py
-    resource = resource_prefix + "post_build_hook_template.txt"
-    dest_path = os.path.join(target, app_pkg,
-                             "hooking",
-                             "post_build_hook.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add ante_release_hook.py
-    resource = resource_prefix + "ante_release_hook_template.txt"
-    dest_path = os.path.join(target, app_pkg,
-                             "hooking",
-                             "ante_release_hook.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    # add post_release_hook.py
-    resource = resource_prefix + "post_release_hook_template.txt"
-    dest_path = os.path.join(target, app_pkg,
-                             "hooking",
-                             "post_release_hook.py")
-    data = pkgutil.get_data("backstage", resource).decode("utf-8")
-    _add_file(dest_path, data)
-    """
+    data = _get_data("backstage", resource_prefix,
+                     "pyproject_template.txt")
+    dest = os.path.join(project_dir, "pyproject.toml")
+    _add_file(data, dest)
+    # add VERSION
+    data = _get_data("backstage", resource_prefix,
+                     "version_template.txt")
+    dest = os.path.join(project_dir, "VERSION")
+    _add_file(data, dest)
 
 
-def _add_json_data_files(target, app_pkg):
-    pyrustic_data_path = os.path.join(target, app_pkg,
-                                        "pyrustic_data")
-    backstage_path = os.path.join(pyrustic_data_path, "backstage")
-    backstage_config_path = os.path.join(backstage_path, "config")
-    backstage_report_path = os.path.join(backstage_path, "report")
-    backstage_data_path = os.path.join(backstage_path, "data")
-    hubstore_path = os.path.join(pyrustic_data_path, "hubstore")
-    # add init.json
-    jason = Jason("init.json", location=constant.BACKSTAGE_CONFIG_PATH)
+def _get_data(pkg, *resource):
+    resource = "/".join(resource)
+    return pkgutil.get_data(pkg, resource).decode("utf-8")
+
+
+def _add_json_data_files(project_dir, app_pkg):
+    pyrustic_data_dir = os.path.join(project_dir, app_pkg, "pyrustic_data")
+    backstage_path = os.path.join(pyrustic_data_dir, "backstage")
+    backstage_hooking_dir = os.path.join(backstage_path, "hooking")
+    backstage_data_dir = os.path.join(backstage_path, "data")
+    # add init.json in hooking dir
+    jason = Jason("init.json", location=constant.BACKSTAGE_HOOKING_DIR)
     global_data = jason.data
-    Jason("init.json", default=global_data, location=backstage_config_path)
-    # add build.json
-    jason = Jason("build.json", location=constant.BACKSTAGE_CONFIG_PATH)
+    Jason("init.json", default=global_data, location=backstage_hooking_dir)
+    # add build.json in hooking dir
+    jason = Jason("build.json", location=constant.BACKSTAGE_HOOKING_DIR)
     global_data = jason.data
-    Jason("build.json", default=global_data, location=backstage_config_path)
-    # add release.json
-    jason = Jason("release.json", location=constant.BACKSTAGE_CONFIG_PATH)
+    Jason("build.json", default=global_data, location=backstage_hooking_dir)
+    # add release.json in hooking dir
+    jason = Jason("release.json", location=constant.BACKSTAGE_HOOKING_DIR)
     global_data = jason.data
-    Jason("release.json", default=global_data, location=backstage_config_path)
-    # add build_report.json
-    Jason("build_report.json", default=[], location=backstage_report_path)
-    # add release_report.json
-    Jason("release_report.json", default=[], location=backstage_report_path)
-    # add github_release_form.json in backstage/data
-    default = dict().fromkeys(("owner", "repository", "release_name",
-                               "tag_name", "target_commitish", "description",
-                               "is_prerelease", "is_draft", "upload_asset",
-                               "asset_name", "asset_label"))
-    Jason("github_release_form.json", default=default, location=backstage_data_path)
-    # add img.json for Hubstore
-    Jason("img.json", default={"small_img": None, "large_img": None},
-          location=hubstore_path)
-    # add promotion.json for Hubstore
-    Jason("promotion.json", default={}, location=hubstore_path)
+    Jason("release.json", default=global_data, location=backstage_hooking_dir)
+    # add build_report.json in data dir
+    Jason("build_report.json", default=[], location=backstage_data_dir)
 
 
-def _add_file(path, data):
-    if os.path.exists(path):
+def _add_file(data, dest):
+    if os.path.exists(dest):
         return
-    with open(path, "w") as file:
+    with open(dest, "w") as file:
         file.write(data)
     
         

@@ -9,7 +9,7 @@ No description
 
 ## Constants
 ```python
-COMMANDS = {'setup': <function process at 0x7efd1882b280>, 'init': <function process at 0x7efd1882b3a0>, 'run': <function process at 0x7efd1882b4c0>, 'build': <function process at 0x7efd1882b700>, 'release': <function process at 0x7efd1882b940>, 'version': <function process at 0x7efd1882bb80>}
+COMMANDS = {'setup': <function process at 0x7f6b62c89280>, 'init': <function process at 0x7f6b62c893a0>, 'run': <function process at 0x7f6b62c894c0>, 'build': <function process at 0x7f6b62c89700>, 'release': <function process at 0x7f6b62c89940>, 'version': <function process at 0x7f6b62c89b80>}
 
 ```
 

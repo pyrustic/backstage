@@ -1,6 +1,6 @@
 <!-- Cover -->
 <div align="center">
-    <img src="https://raw.githubusercontent.com/pyrustic/misc/master/assets/backstage/cover.png" alt="Demo" width="640">
+    <img src="https://raw.githubusercontent.com/pyrustic/misc/master/assets/backstage/cover.jpg" alt="Demo" width="640">
     <p align="center">
     By © Jorge Royan&nbsp;/&nbsp;<a rel="nofollow" class="external free" href="http://www.royan.com.ar">http://www.royan.com.ar</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=23405928">Link</a>
     </p>

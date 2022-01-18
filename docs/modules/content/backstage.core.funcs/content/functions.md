@@ -8,12 +8,12 @@ Back to [All Modules](https://github.com/pyrustic/backstage/blob/master/docs/mod
 >
 > **Classes:** &nbsp; None
 >
-> **Functions:** &nbsp; [\_sort\_wheels\_names](#_sort_wheels_names) &nbsp; [ask\_for\_confirmation](#ask_for_confirmation) &nbsp; [build\_package](#build_package) &nbsp; [copyto](#copyto) &nbsp; [create\_kurl](#create_kurl) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_hub\_url](#get_hub_url) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_root\_from\_package](#get_root_from_package) &nbsp; [module\_name\_to\_class](#module_name_to_class) &nbsp; [moveto](#moveto) &nbsp; [package\_name\_to\_path](#package_name_to_path) &nbsp; [strictly\_capitalize](#strictly_capitalize) &nbsp; [wheels\_assets](#wheels_assets)
+> **Functions:** &nbsp; [\_sort\_wheels\_names](#_sort_wheels_names) &nbsp; [ask\_for\_confirmation](#ask_for_confirmation) &nbsp; [build\_package](#build_package) &nbsp; [copyto](#copyto) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_hub\_url](#get_hub_url) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_root\_from\_package](#get_root_from_package) &nbsp; [module\_name\_to\_class](#module_name_to_class) &nbsp; [moveto](#moveto) &nbsp; [package\_name\_to\_path](#package_name_to_path) &nbsp; [strictly\_capitalize](#strictly_capitalize) &nbsp; [wheels\_assets](#wheels_assets)
 >
 > **Constants:** &nbsp; None
 
 # All Functions
-[\_sort\_wheels\_names](#_sort_wheels_names) &nbsp; [ask\_for\_confirmation](#ask_for_confirmation) &nbsp; [build\_package](#build_package) &nbsp; [copyto](#copyto) &nbsp; [create\_kurl](#create_kurl) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_hub\_url](#get_hub_url) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_root\_from\_package](#get_root_from_package) &nbsp; [module\_name\_to\_class](#module_name_to_class) &nbsp; [moveto](#moveto) &nbsp; [package\_name\_to\_path](#package_name_to_path) &nbsp; [strictly\_capitalize](#strictly_capitalize) &nbsp; [wheels\_assets](#wheels_assets)
+[\_sort\_wheels\_names](#_sort_wheels_names) &nbsp; [ask\_for\_confirmation](#ask_for_confirmation) &nbsp; [build\_package](#build_package) &nbsp; [copyto](#copyto) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_hub\_url](#get_hub_url) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_root\_from\_package](#get_root_from_package) &nbsp; [module\_name\_to\_class](#module_name_to_class) &nbsp; [moveto](#moveto) &nbsp; [package\_name\_to\_path](#package_name_to_path) &nbsp; [strictly\_capitalize](#strictly_capitalize) &nbsp; [wheels\_assets](#wheels_assets)
 
 ## \_sort\_wheels\_names
 No description
@@ -74,20 +74,6 @@ Copy a file or contents of directory (src) to a destination file or folder (dest
 
 
 **Signature:** (src, dest)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## create\_kurl
-No description
-
-
-
-**Signature:** ()
 
 
 

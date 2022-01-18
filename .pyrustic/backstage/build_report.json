@@ -1,5 +1,11 @@
 [
     {
+        "build_timestamp": 1642547168,
+        "dist": "backstage-0.0.8-py3-none-any.whl",
+        "release_timestamp": 1642547184,
+        "version": "0.0.8"
+    },
+    {
         "build_timestamp": 1642546876,
         "dist": "backstage-0.0.7-py3-none-any.whl",
         "release_timestamp": 1642546896,

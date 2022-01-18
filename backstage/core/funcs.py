@@ -1,7 +1,7 @@
 import os
 import os.path
 import shutil
-from kurl import Kurl
+
 
 
 def get_app_pkg(project_dir):
@@ -194,13 +194,6 @@ def get_root_from_package(package_name):
         root = x
         break
     return root
-
-
-def create_kurl():
-    headers = {"Accept": "application/vnd.github.v3+json",
-               "User-Agent": "Pyrustic"}
-    kurl = Kurl(headers=headers)
-    return kurl
 
 
 def get_hub_url(res):

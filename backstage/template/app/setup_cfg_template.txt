@@ -1,0 +1,31 @@
+[metadata]
+name = {project_name}
+version = file: VERSION
+url = https://pyrustic.github.com
+author = {author}
+author_email = {email}
+maintainer = {author}
+maintainer_email = {email}
+description = Cool Python app built with Pyrustic
+long_description = file: README.md
+long_description_content_type = text/markdown
+license = MIT
+keywords =
+    application
+classifiers =
+    Programming Language :: Python :: 3
+    License :: OSI Approved :: MIT License
+    Operating System :: OS Independent
+
+[options]
+python_requires = >=3.5
+packages = find:
+include_package_data = true
+zip_safe = false
+install_requires =
+    shared
+    backstage
+
+[options.entry_points]
+console_scripts =
+    {app_pkg} = {app_pkg}.__main__:main

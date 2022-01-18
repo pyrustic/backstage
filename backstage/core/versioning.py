@@ -24,7 +24,9 @@ def get_version(project_dir):
     for char in line:
         if char not in (" ", "\n"):
             cache.append(char)
-    return "".join(cache)
+    version = "".join(cache)
+    version = None if not version else version
+    return version
 
 
 def set_version(project_dir, version):

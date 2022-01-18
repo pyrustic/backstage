@@ -1,157 +1,97 @@
-# Modules Documentation - Overview
+# Modules Documentation
 
-**backstage.\_\_main\_\_**
-<br>
-No description
-<br>
-[constants (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.__main__/constants.md) &nbsp;.&nbsp; [functions (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.__main__/functions.md)
-
-**backstage.cli.build**
-<br>
-No description
-<br>
-[functions (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.build/functions.md)
-
-**backstage.cli.init**
-<br>
-No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.init/functions.md)
-
-**backstage.cli.release**
-<br>
-No description
-<br>
-[functions (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.release/functions.md)
-
-**backstage.cli.run**
-<br>
-No description
-<br>
-[functions (3)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.run/functions.md)
-
-**backstage.cli.setup**
-<br>
-No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.setup/functions.md)
-
-**backstage.cli.version**
-<br>
-No description
-<br>
-[functions (3)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.cli.version/functions.md)
-
-**backstage.core.backstage\_setup**
-<br>
-No description
-<br>
-[functions (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.backstage_setup/functions.md) &nbsp;.&nbsp; [classes (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.backstage_setup/classes.md)
-
-**backstage.core.building**
-<br>
-No description
-<br>
-[functions (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.building/functions.md)
-
-**backstage.core.constant**
-<br>
-No description
-<br>
-[constants (4)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.constant/constants.md)
-
-**backstage.core.dist**
+[backstage](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/README.md#module-overview)
 <br>
 Project Backstage API
-<br>
-[functions (3)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.dist/functions.md)
 
-**backstage.core.funcs**
+
+[backstage.core.backstage\_setup](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.backstage_setup/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (14)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.funcs/functions.md)
 
-**backstage.core.github\_client**
+
+[backstage.core.constant](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.constant/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (5)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.github_client/functions.md) &nbsp;.&nbsp; [classes (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.github_client/classes.md)
 
-**backstage.core.hooking**
+
+[backstage.core.dist](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.dist/README.md#module-overview)
+<br>
+Project Backstage API
+
+
+[backstage.core.funcs](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.funcs/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.hooking/functions.md)
 
-**backstage.core.initialization**
+
+[backstage.core.initialization](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.initialization/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (8)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.initialization/functions.md) &nbsp;.&nbsp; [classes (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.initialization/classes.md)
 
-**backstage.core.lite\_test\_runner**
+
+[backstage.core.lite\_test\_runner](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.lite_test_runner/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.lite_test_runner/functions.md) &nbsp;.&nbsp; [classes (2)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.lite_test_runner/classes.md)
 
-**backstage.core.publishing**
+
+[backstage.core.pymisc](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.pymisc/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (4)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.publishing/functions.md) &nbsp;.&nbsp; [classes (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.publishing/classes.md)
 
-**backstage.core.pymisc**
+
+[backstage.core.tasks](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.tasks/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (8)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.pymisc/functions.md)
 
-**backstage.core.releaser**
+
+[backstage.core.versioning](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.versioning/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.releaser/functions.md)
 
-**backstage.core.runner**
+
+[backstage.error](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.error/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.runner/functions.md)
 
-**backstage.core.versioning**
+
+[backstage.script.build](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.build/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (3)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.core.versioning/functions.md)
 
-**backstage.error.\_\_init\_\_**
+
+[backstage.script.gitcommit](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.gitcommit/README.md#module-overview)
 <br>
 No description
-<br>
-[classes (4)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.error.__init__/classes.md)
 
-**backstage.script.build\_project**
+
+[backstage.script.gitinit](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.gitinit/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.build_project/functions.md)
 
-**backstage.script.init\_project**
+
+[backstage.script.gitpush](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.gitpush/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.init_project/functions.md)
 
-**backstage.script.update\_changelog**
+
+[backstage.script.init](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.init/README.md#module-overview)
 <br>
 No description
-<br>
-[functions (4)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.update_changelog/functions.md)
 
-**backstage.script.versioning**
+
+[backstage.script.release](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.release/README.md#module-overview)
 <br>
 No description
+
+
+[backstage.script.run](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.run/README.md#module-overview)
 <br>
-[functions (1)](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.versioning/functions.md)
+No description
+
+
+[backstage.script.version](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage.script.version/README.md#module-overview)
+<br>
+No description
+
+

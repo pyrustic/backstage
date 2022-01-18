@@ -1,54 +1,37 @@
 import os
+import os.path
 import sys
-import backstage as api
-from backstage import cli
-
-
-COMMANDS = {"setup": cli.setup, "init": cli.init,
-            "run": cli.run, "build": cli.build,
-            "release": cli.release, "version": cli.version}
+import backstage
 
 
 def main():
+    backstage.backstage_setup()
     project_dir = os.getcwd()
     args = sys.argv[1:]
-    COMMANDS["help"] = help_handler
-    if not args:
-        help_handler(project_dir, *args)
-        return
-    command = args[0]
     try:
-        COMMANDS[command](project_dir, *args[1:])
-    except KeyError as e:
-        msg = "Unknown command. Type 'help' !"
-        print(msg)
+        tasks = backstage.get_tasks(project_dir)
+    except backstage.NoTasksFileError:
+        tasks = dict()
+    if not args:
+        help_handler(project_dir, tasks)
+        return
+    task = args[0]
+    if task not in tasks:
+        help_handler(project_dir, tasks)
+        return
+    backstage.run(*tasks[task], extra_args=args[1:])
 
 
-def help_handler(project_dir, *args):
+def help_handler(project_dir, tasks):
     """Help me !"""
-    intro = ("""Project Backstage {}\n""".format(api.dist_version("backstage"))
-             + """Website: https://pyrustic.github.io\n"""
+    intro = ("""Project Backstage {}\n""".format(backstage.dist_version("backstage"))
+             + """https://pyrustic.github.io\n"""
              + """This software is part of the Pyrustic Open Ecosystem.\n""")
     print("".join(intro))
-
-    print("Available commands")
-    print("==================")
-    print(" ".join(COMMANDS.keys()))
+    print("Available Tasks")
+    print("===============\n")
+    print("  ".join(tasks.keys()))
     print()
-    print("Type 'help <command>' for more information.")
-    print()
-    if not args:
-        return
-    command = args[0]
-    try:
-        doc = COMMANDS[command].__doc__
-    except KeyError as e:
-        print("Unknown command")
-    else:
-        title = "Command - {}".format(command)
-        print(title)
-        print("="*len(title))
-        print(doc)
 
 
 if __name__ == "__main__":

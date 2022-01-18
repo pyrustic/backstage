@@ -1,162 +1,180 @@
+<!-- Cover -->
+<div align="center">
+    <img src="https://raw.githubusercontent.com/pyrustic/misc/master/assets/backstage/cover.png" alt="Demo" width="640">
+    <p align="center">
+    By © Jorge Royan&nbsp;/&nbsp;<a rel="nofollow" class="external free" href="http://www.royan.com.ar">http://www.royan.com.ar</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=23405928">Link</a>
+    </p>
+</div>
+
+
+
 <!-- Intro Text -->
 # Backstage
-<b> Command line tool to manage, build and release your Python projects </b>
-
+<b> Intuitive and extensible command line tool for managing software projects </b>
+    
 This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io).
+> [Installation](#installation) . [Demo](#demo) . [Latest](https://github.com/pyrustic/backstage/tags) . [Documentation](https://github.com/pyrustic/backstage/tree/master/docs/modules#readme)
 
-<!-- Quick Links -->
-[Start a project](#start-a-project) | [Project structure](#project-structure) | [Installation](#installation) | [Reference](https://github.com/pyrustic/backstage/tree/master/docs/modules#readme)
+## Table of contents
+- [Overview](#overview) 
+- [Subrun](#subrun)
+- [Default behavior](#default-behavior)
+- [Installation](#installation)
+- [Demo](#demo)
+
 
 ## Overview
-This is an overview of available commands in `Backstage`. You can learn more about any command with `help <command>`.
+**Backstage** is a command-line tool that allows the developer to define, coordinate and use the various resources at his disposal to create and manage a software project.
 
-- `link`: Link your `Target project` to the Project Manager.
-- `unlink`: Use this command to unlink the currently linked Target.
-- `relink`: Link again the previously linked Target or one of
-    recent linked Targets.
-- `recent`: List of recent Targets.
-- `target`: Use this command to check the currently linked Target.
-- `init`: Use this command to initialize your project.
-- `run`: Use this command to run a module.
-- `build`: Use this command to build a distribution package
-    that could be published later with the 'release'
-    command.
-- `release`: Use this command to publish the latest distribution
-    package previously built with the command 'build'.
-- `hub`: Use this command to retrieve useful information
-    from a Github repository.
-- `help`: List available commands with "help" or detailed help with "help cmd".
-- `EOF`: Enter an [EOF](https://en.wikipedia.org/wiki/End-of-file) to leave.
+Concretely, the developer specifies in a `backstage.tasks` file placed at the root of his project, the **tasks** necessary for the creation and management of the project. A task is represented by a name and a sequence of commands. From the command line, the developer can launch the execution of a task with or without arguments which are automatically passed to the first command of the task.
 
-You can issue these commands programmatically via the function `backstage.oneline.command`.
+Here is a fictional example of the contents of `backstage.tasks`:
 
-```python
-from backstage.oneline import command
+```
+[init]
+templating --arg "default-python-desktop-project"
 
-# build the demo project
-command(line="build", target="/home/alex/demo")
+[build]
+python -m test "test_*"
+packager --dist "project.whl" --out "build_report.pdf"
+notifyme --to "my.email@invalid.earth" -f "build_report.pdf"
+
+[commit]
+git commit
+
+[release]
+uploader --dist "project.whl" --to "github-release"
+uploader --dist "project.whl" --to "pypi"
+
 ```
 
-`Backstage` exposes an `API` in the module `pyrustic.manager` (technically in `__init__.py` located in the package `pyrustic.manager`).
+And this is how the `build` task can be launched:
 
-```python
+```bash
+> cd /path/to/project
+> backstage build
+building...
+```
+
+To get the list of available tasks:
+
+```bash
+> cd /path/to/project
+> backstage
+Project Backstage 0.0.5
+https://pyrustic.github.io
+This software is part of the Pyrustic Open Ecosystem.
+
+Available Tasks
+===============
+
+init  run  build  release  version  test  gitinit  gitcommit  gitpush
+
+```
+
+**Backstage** exposes an API (the same used by the CLI) with which you can interact programmatically in Python:
+
+```python 
 import backstage
 
-# build the demo project
-target = "/home/alex/demo"
-app_pkg = backstage.get_app_pkg(target)  # returns 'demo'
-backstage.build(target, app_pkg)
-```
+project_dir = "/path/to/project"
 
-Read more about the `API` and `pyrustic.manager.oneline.command` in the [reference](https://github.com/pyrustic/backstage/tree/master/docs/reference#readme).
+# get the tasks defined in 'backstage.tasks'
+tasks = backstage.get_tasks(project_dir)
 
+# commands for the 'build' task
+commands = tasks["build"]
 
-## Start a project
-
-Once you have [installed](https://github.com/pyrustic/backstage#installation) `backstage`, you can start a project:
-
-```bash
-$ backstage
-Project Backstage 0.0.1
-Website: https://pyrustic.github.io
-This software is part of the Pyrustic Open Ecosystem.
-Type "help" or "?" to list commands. Enter an EOF to exit.
-
-
->>
+# run the commands
+backstage.run(*commands, project_dir=project_dir)
 
 ```
 
-### Step 1: Link the project directory
+Check the [modules documentation](https://github.com/pyrustic/backstage/tree/master/docs/modules#readme).
 
-Link the project to `backstage` by indicating the path of the project folder. This could be a relative path or even a dot to indicate the current working directory.
+## Subrun
+Under the hood, **Backstage** uses extensively the Python library **Subrun**. 
 
-If you don't submit a path, a file-chooser dialog will open.
+**Subrun** is an elegant API to safely start and communicate with processes in Python.
 
-```bash
->> link /home/alex/demo
-Successfully linked !
-[demo] /home/alex/demo
+> **Discover [Subrun](https://github.com/pyrustic/subrun) !**
 
-Not yet initialized project (check 'help init')
+## Default Behavior
+When a `backstage.tasks` file is missing in the root of your project, **Backstage** rely on a global `backstage.tasks` file located at `$HOME/PyrusticHome/backstage` and created upon the first usage of **Backstage**. This `backstage.tasks` file is made to create and manage Python projects.
+
+This is the contents of the global `backstage.tasks` file:
 
 ```
-From now on, the project linked to `backstage` will be called the `Target`. You can issue the `target` command to see the currently linked project.
+[init]
+python -m backstage.script.init
 
-```bash
->>> target
-[demo] /home/alex/demo
-Not yet initialized project (check 'help init')
+[run]
+python -m backstage.script.run
+
+[build]
+python -m backstage.script.build
+
+[release]
+python -m backstage.script.release
+
+[version]
+python -m backstage.script.version
+
+[test]
+python -m unittest discover -f -s tests -t .
+
+[gitinit]
+python -m backstage.script.gitinit
+
+[gitcommit]
+python -m backstage.script.gitcommit
+
+[gitpush]
+python -m backstage.script.gitpush
+
 ```
 
-### Step 2: Initialize the project directory
+Basically, the default behavior of **Backstage** allows the developer to create a packageable Python project with the `init` command, create distribution package with the `build` command that has an integrated automatic versioning system, publish the distribution package to PyPI, run some basic **Git** commands, et cetera.
 
-Now you can initialize your project with the command `init`. Initializing the project will simply create a basic [project structure](#projet-structure).
+
+> **Play with the [Demo](#demo) !**
+
+# Installation
+**Backstage** is **cross platform** and versions under **1.0.0** will be considered **Beta** at best. It is built on [Ubuntu](https://ubuntu.com/download/desktop) with [Python 3.8](https://www.python.org/downloads/) and should work on **Python 3.5** or **newer**.
+
+## For the first time
 
 ```bash
->>> init
-Successfully initialized !
+$ pip install backstage
 ```
-You can then run the project with the command `run`.
 
-If you quit `backstage`, the next time you want to link the same project, run the `relink` command or use the `recent` command.
-
-
-
-### One line command
-You can initialize a project with just 1 step:
+## Upgrade
 ```bash
+$ pip install backstage --upgrade --upgrade-strategy eager
+
+```
+
+## Make your project packageable
+**Backstage** is an extensible command line tool for managing software projects. By default, it supports Python, so you can run the `init` command to make your Python project [packageable](https://packaging.python.org/en/latest/tutorials/packaging-projects/):
+
+```bash
+$ cd /path/to/project
 $ backstage init
+Project successfully initialized !
 ```
 
-`backstage` will assume that the `target` is the current working directory.
+You can also create a distribution package of your project with the `build` command, then publish it to [PyPI](https://pypi.org/) with the `release` command, et cetera.
 
-## Project structure
-
-If you issue the command `init` in `backstage`, the `target` will be populated with files and directories to create a base project following the conventional Python project structure as described in the [Python Packaging User Guide](https://packaging.python.org/tutorials/packaging-projects/).
-
-This is what your project structure will look like:
-
-```bash
-demo/  # the demo project ($PROJECT_DIR) [1]
-    demo/  # this is the app package ($APP_PKG) [2]
-        pyrustic_data/  # Pyrustic config here [3]
-        __init__.py
-        __main__.py  # the mighty entry point of your app ! [4]
-    tests/
-        __init__.py
-    CHANGELOG.md  # populated with the content of LATEST_RELEASE.md
-    LATEST_RELEASE.md  # text displayed on the Latest Release page
-    LICENSE  # empty license file, please don't forget to fill it
-    MANIFEST.in  # already filled with convenient lines of rules
-    pyproject.toml  # the new unified Python project settings file [5]
-    README.md  # default nice README (there are even an image inside) [6]
-    setup.cfg  # define here your name, email, dependencies, and more [7]
-    setup.py  # it is not a redundancy, don't remove it, don't edit it [8]
-    VERSION  # unique location to define the version of the app [9]
-    .gitignore  # you can edit it if you want
-```
-
-- `[1]` This is the project directory ($PROJECT_DIR), also knows as the `target`.
-- `[2]` Your codebase lives in the app package ($APP_PKG).
-- `[3]` More information later.
-- `[4]` This is the entry point of your app.
-- `[5]` Read [What the heck is pyproject.toml ?](https://snarky.ca/what-the-heck-is-pyproject-toml/) and the [PEP 518](https://www.python.org/dev/peps/pep-0518/).
-- `[6]` The default README looks like [this](https://github.com/pyrustic/demo#readme).
-- `[7]` Read this [user guide](https://setuptools.readthedocs.io/en/latest/userguide/declarative_config.html) to edit the `setup.cfg` file.
-- `[8]` If you want editable installs you still need a `setup.py` [shim](https://twitter.com/pganssle/status/1241161328137515008).
-- `[9]` You won't need to edit this file if you use the commands `build` and `release` that have an integrated versioning mechanism.
-
-In order to avoid confusion, let's agree on the following points:
-- `demo.core.module` is the dotted name of the `module.py` module present in the `core` package located in the `$APP_PKG`.
-- `$APP_PKG.core.module` is the equivalent of `demo.core.module`.
-- The `setup.cfg` file can be represented as `$PROJECT_DIR/setup.cfg` or `/path/to/setup.cfg` but never as `demo/setup.cfg` !
-- `$APP_DIR` exists. See the next point.
-- `$APP_DIR` and `$APP_PKG` represent the same directory. The nuance is that it is more elegant to write `$APP_DIR/misc/data.json` than `$APP_PKG/misc/data.json`.
-- `$PROJECT_PKG` does not exist. Only `$PROJECT_DIR` exists.
+**Discover [Backstage](https://github.com/pyrustic/backstage) !**
 
 
-## Installation
-```bash
-pip install backstage
-```
+# Demo
+A demo is available to play with as a **Github Gist**. Feel free to give a feedback in the comments section.
+
+**Play with the [Demo](https://gist.github.com/pyrustic/b3729fd4822fb5048fd443cf7d64f686).**
+
+<br>
+<br>
+<br>
+
+[Back to top](#readme)

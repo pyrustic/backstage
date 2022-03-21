@@ -2,12 +2,12 @@ Back to [All Modules](https://github.com/pyrustic/backstage/blob/master/docs/mod
 
 # Module Overview
 
-> **backstage**
-> 
-> Project Backstage API
+**backstage**
+ 
+Project Backstage API
+
+> **Classes:** &nbsp; None
 >
-> **Classes:** &nbsp; [Error](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/classes/Error.md#class-error) &nbsp; [NoTasksFileError](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/classes/NoTasksFileError.md#class-notasksfileerror)
+> **Functions:** &nbsp; [\_join\_command](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#_join_command) &nbsp;&nbsp; [create\_tasks\_file](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#create_tasks_file) &nbsp;&nbsp; [get\_default\_tasks](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_default_tasks) &nbsp;&nbsp; [get\_tasks](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_tasks) &nbsp;&nbsp; [run](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#run)
 >
-> **Functions:** &nbsp; [backstage\_setup](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#backstage_setup) &nbsp; [dist\_info](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#dist_info) &nbsp; [dist\_version](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#dist_version) &nbsp; [get\_app\_pkg](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_app_pkg) &nbsp; [get\_project\_name](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_project_name) &nbsp; [get\_setup\_config](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_setup_config) &nbsp; [get\_tasks](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_tasks) &nbsp; [get\_version](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#get_version) &nbsp; [initialized](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#initialized) &nbsp; [interpret\_version](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#interpret_version) &nbsp; [run](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#run) &nbsp; [run\_tests](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#run_tests) &nbsp; [set\_version](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/functions.md#set_version)
->
-> **Constants:** &nbsp; constant
+> **Constants:** &nbsp; BACKSTAGE_HOME &nbsp;&nbsp; PYRUSTIC_HOME

@@ -2,23 +2,61 @@ Back to [All Modules](https://github.com/pyrustic/backstage/blob/master/docs/mod
 
 # Module Overview
 
-> **backstage**
-> 
-> Project Backstage API
+**backstage**
+ 
+Project Backstage API
+
+> **Classes:** &nbsp; None
 >
-> **Classes:** &nbsp; [Error](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/classes/Error.md#class-error) &nbsp; [NoTasksFileError](https://github.com/pyrustic/backstage/blob/master/docs/modules/content/backstage/content/classes/NoTasksFileError.md#class-notasksfileerror)
+> **Functions:** &nbsp; [\_join\_command](#_join_command) &nbsp;&nbsp; [create\_tasks\_file](#create_tasks_file) &nbsp;&nbsp; [get\_default\_tasks](#get_default_tasks) &nbsp;&nbsp; [get\_tasks](#get_tasks) &nbsp;&nbsp; [run](#run)
 >
-> **Functions:** &nbsp; [backstage\_setup](#backstage_setup) &nbsp; [dist\_info](#dist_info) &nbsp; [dist\_version](#dist_version) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_setup\_config](#get_setup_config) &nbsp; [get\_tasks](#get_tasks) &nbsp; [get\_version](#get_version) &nbsp; [initialized](#initialized) &nbsp; [interpret\_version](#interpret_version) &nbsp; [run](#run) &nbsp; [run\_tests](#run_tests) &nbsp; [set\_version](#set_version)
->
-> **Constants:** &nbsp; constant
+> **Constants:** &nbsp; BACKSTAGE_HOME &nbsp;&nbsp; PYRUSTIC_HOME
 
 # All Functions
-[backstage\_setup](#backstage_setup) &nbsp; [dist\_info](#dist_info) &nbsp; [dist\_version](#dist_version) &nbsp; [get\_app\_pkg](#get_app_pkg) &nbsp; [get\_project\_name](#get_project_name) &nbsp; [get\_setup\_config](#get_setup_config) &nbsp; [get\_tasks](#get_tasks) &nbsp; [get\_version](#get_version) &nbsp; [initialized](#initialized) &nbsp; [interpret\_version](#interpret_version) &nbsp; [run](#run) &nbsp; [run\_tests](#run_tests) &nbsp; [set\_version](#set_version)
+[\_join\_command](#_join_command) &nbsp;&nbsp; [create\_tasks\_file](#create_tasks_file) &nbsp;&nbsp; [get\_default\_tasks](#get_default_tasks) &nbsp;&nbsp; [get\_tasks](#get_tasks) &nbsp;&nbsp; [run](#run)
 
-## backstage\_setup
-This function does this:
-- create user.json in data dir
-- fill the config directory
+## \_join\_command
+None
+
+
+
+**Signature:** (command, extra\_args)
+
+
+
+
+
+**Return Value:** None.
+
+[Back to Top](#module-overview)
+
+
+## create\_tasks\_file
+Create a tasks-file in the project directory.
+
+
+
+
+**Signature:** (source, project\_dir=None, override=False)
+
+|Parameter|Description|
+|---|---|
+|source|a hackernote structure or a text string that will be saved in 'backstage.tasks'|
+|project\_dir|path, the project_dir|
+|override|boolean, override the current tasks-file if it exists |
+
+
+
+
+
+**Return Value:** ['Returns True or False']
+
+[Back to Top](#module-overview)
+
+
+## get\_default\_tasks
+Returns a hackernote structure that represents the default tasks Python-compatible.
+Note that the bodies of sections are strings, i.e., each value in this dict is a string.
 
 
 
@@ -26,227 +64,57 @@ This function does this:
 
 
 
-**Return Value:** None
-
-[Back to Top](#module-overview)
 
 
-## dist\_info
-Use this function to get some info about an installed
-distribution package
-
-Parameters:
-    name: the distribution name, example: "wheel", "cyberpunk-theme"
-
-Returns: A dict with these keys:
-    name, description, home_page, version,
-    author, author_email, maintainer, maintainer_email.
-
-Note: All values in the returned dict are strings.
-
-
-
-**Signature:** (name)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## dist\_version
-Returns the version of the installed distribution package,
-otherwise returns None.
-
-
-
-**Signature:** (name)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## get\_app\_pkg
-This function extracts the application package name from a project_dir path.
-Basically it extracts the basename from the path then turns dashes "-" into
-"underscores" "_".
-
-Parameters:
-    - project_dir: str, path to the project_dir project
-
-Returns: str, the application package name.
-
-
-
-**Signature:** (project\_dir)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## get\_project\_name
-Returns the project name
-
-
-
-**Signature:** (project\_dir)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## get\_setup\_config
-No description
-
-
-
-**Signature:** (project\_dir)
-
-
-
-**Return Value:** None
+**Return Value:** None.
 
 [Back to Top](#module-overview)
 
 
 ## get\_tasks
-No description
+Get a dictionary of available tasks in the tasks file in this project_dir
+
 
 
 
 **Signature:** (project\_dir=None)
 
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## get\_version
-This function read the VERSION file in the project_dir project
-then returns the version (str) of the project.
-
-Parameters:
-     - project_dir: str, path to the project_dir project
-
-Returns: str, version extracted from $PROJECT_DIR/VERSION or None
+|Parameter|Description|
+|---|---|
+|project\_dir|string, path of the project_dir |
 
 
 
-**Signature:** (project\_dir)
+|Exception|Description|
+|---|---|
+|error.NoTasksFileError|raised when the tasks file is missing |
 
 
 
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## initialized
-Returns True if the project_dir is initialized, else returns False
-
-
-
-**Signature:** (project\_dir, app\_pkg=None)
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## interpret\_version
-This function interprets the command to set a new version.
-
-Parameters:
-    - cur_version: str, the current version, the one to alter.
-    - new_version: str, the command to set a new version.
-
-A command can be an actual new version string, or one of the keywords:
- - "maj": to increment the major number of the current version,
- - "min": to increment the minor number of the current version,
- - "rev": to increment the revision number of the current version.
-
-Returns: The new version as it should be saved in version.py
-
-
-
-**Signature:** (cur\_version, new\_version)
-
-
-
-**Return Value:** None
+**Return Value:** ['A dictionary of tasks. Each key is a task name, each value is a list of commands strings.', 'Example: {"init": ["do this", "do that"], "build": ["do this", "command 2"]}']
 
 [Back to Top](#module-overview)
 
 
 ## run
-No description
+Run one or multiple commands with extra arguments
+
 
 
 
 **Signature:** (\*commands, extra\_args=None, project\_dir=None)
 
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## run\_tests
-Runs the tests in the project_dir.
-
-Parameters:
-    - project_dir: str, path to the project_dir project
-
-Returns: a tuple (bool, object). The bool indicate the success
-(True) or the failure (False) of the tests.
-The second item in the tuple can be None, an Exception instance, or a string.
-
-Note: the tests should be located at $PROJECT_DIR/tests
+|Parameter|Description|
+|---|---|
+|\*commands|a command string or multiple commands strings that will be run with the library 'subrun'|
+|extra\_args|a list of extra arguments to append to the first command only|
+|project\_dir|the path string |
 
 
 
-**Signature:** (project\_dir)
 
 
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## set\_version
-This function edits the content of $PROJECT_DIR/VERSION
-
-Parameters:
-     - project_dir: str, path to the project_dir project
-     - version: str, the version
-
-Returns:
-    - bool, False, if the module version.py is missing
-    - bool, True if all right
-
-
-
-**Signature:** (project\_dir, version)
-
-
-
-**Return Value:** None
+**Return Value:** ['Nothing']
 
 [Back to Top](#module-overview)
 

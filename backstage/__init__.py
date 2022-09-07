@@ -1,103 +1,92 @@
 """Project Backstage API"""
 import os
 import os.path
-import shlex
-import pkgutil
-import pathlib
-import subrun
-import hackernote
+import sys
+import shared
+from threading import Lock
+from backstage import util
+from backstage.pattern import Pattern
 from backstage import error
+from backstage.runner import Runner
+from backstage import constant
 
 
-PYRUSTIC_HOME = os.path.join(os.path.expanduser("~"), "PyrusticHome")
-BACKSTAGE_HOME = os.path.join(PYRUSTIC_HOME, "backstage")
+class Backstage:
+    def __init__(self, directory):
+        self._directory = directory
+        self._cache_dir = os.path.join(directory, ".backstage")
+        self._tasks = None
+        self._runners = list()
+        self._global_vars = dict()
+        self._database_vars = dict()
+        self._lock = Lock()
+        self._i = 0
+        self._execution_log = list()
+        self._setup()
 
+    @property
+    def directory(self):
+        return self._directory
 
-def get_default_tasks():
-    """
-    Returns a hackernote structure that represents the default tasks Python-compatible.
-    Note that the bodies of sections are strings, i.e., each value in this dict is a string.
-    """
-    res = "/default_tasks"
-    data = pkgutil.get_data("backstage", res).decode("utf-8")
-    return data
+    @property
+    def tasks(self):
+        return self._tasks
 
+    @property
+    def global_vars(self):
+        return self._global_vars
 
-def create_tasks_file(source, project_dir=None, override=False):
-    """
-    Create a tasks-file in the project directory.
+    @property
+    def database_vars(self):
+        return self._database_vars
 
-    [parameters]
-    - source: a hackernote structure or a text string that will be saved in 'backstage.tasks'
-    - project_dir: path, the project_dir
-    - override: boolean, override the current tasks-file if it exists
+    @property
+    def runners(self):
+        return self._runners
 
-    [return]
-    Returns True or False
-    """
-    if not project_dir:
-        project_dir = os.getcwd()
-    data = source if isinstance(source, str) else hackernote.render(source)
-    dest = os.path.join(project_dir, "backstage.tasks")
-    if os.path.isfile(dest) and not override:
-        return False
-    with open(dest, "w") as file:
-        file.write(data)
-    return True
+    @property
+    def lock(self):
+        return self._lock
 
+    @property
+    def execution_log(self):
+        return self._execution_log
 
-def run(*commands, extra_args=None, project_dir=None):
-    """
-    Run one or multiple commands with extra arguments
+    def run(self, task, arguments=None, config=None):
+        """
+        task is a string
+        arguments is either None, a string or a list of strings
+        """
+        runner = Runner(self, task, self.gen_rid(), arguments, config)
+        try:
+            runner.start()
+        except Exception as e:
+            pass
+        # store data
+        shared.json_write("database.json", self._database_vars,
+                          directory=self._cache_dir)
+        # store execution log
+        util.save_execution_log(self, self._execution_log)
+        return runner
 
-    [parameters]
-    - *commands: a command string or multiple commands strings that will be run with the library 'subrun'
-    - extra_args: a list of extra arguments to append to the first command only
-    - project_dir: the path string
+    def gen_rid(self):
+        with self._lock:
+            rid = self._i
+            self._i += 1
+            return rid
 
-    [return]
-    Nothing
-    """
-    first_command = True
-    for command in commands:
-        if command.startswith("#"):
-            continue
-        if first_command:
-            first_command = False
-            command = _join_command(command, extra_args)
-        info = subrun.run(command, cwd=project_dir)
-        if not info.success:
-            break
+    def _setup(self):
+        # allow python modules imports from backstage.tasks
+        sys.path.insert(0, self._directory)
+        # load tasks
+        tasks = util.get_tasks(self._directory)
+        self._tasks = {key: val for key, val in tasks.items() if not key.endswith(".doc")}
+        # load stored vars
+        self._database_vars = shared.json_readonly("database.json",
+                                                   default=dict(),
+                                                   directory=self._cache_dir)
 
-
-def get_tasks(project_dir=None):
-    """
-    Get a dictionary of available tasks in the tasks file in this project_dir
-
-    [parameters]
-    - project_dir: string, path of the project_dir
-
-    [exceptions]
-    - error.NoTasksFileError: raised when the tasks file is missing
-
-    [return]
-    A dictionary of tasks. Each key is a task name, each value is a list of commands strings.
-    Example: {"init": ["do this", "do that"], "build": ["do this", "command 2"]}
-    """
-    if not project_dir:
-        project_dir = os.getcwd()
-    filename = os.path.join(project_dir, "backstage.tasks")
-    if not os.path.isfile(filename):
-        raise error.NoTasksFileError
-    return hackernote.parse(pathlib.Path(filename), compact=True)
-
-
-def _join_command(command, extra_args):
-    if not extra_args:
-        return command
-    try:
-        extra_args = " ".join(shlex.quote(item) for item in extra_args)
-    except Exception as e:
-        msg = "Failed to join the extra_args"
-        raise error.Error(msg) from None
-    return "{} {}".format(command, extra_args)
+    def _run_init_task(self, arguments=None):
+        if "" not in self._tasks:
+            return
+        return self.run("", arguments=arguments)

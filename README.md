@@ -27,7 +27,7 @@ This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io
 - [File and directory manipulation](#file-and-directory-manipulation)
 - [Exception handling and tests](#exception-handling-and-tests)
 - [Interfacing with Python](#interfacing-with-python)
-- [Embedded documentation and tests](#embedded-documentation-and-tests)
+- [Exception handling and tests](#exception-handling-and-tests)
 - [Command line interface and developer experience](#command-line-interface-and-developer-experience)
 - [Miscellaneous](#miscellaneous)
 - [Demo](#demo)

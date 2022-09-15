@@ -22,7 +22,7 @@ This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io
 - [Spawning processes and branching subtasks](#spawning-processes-and-branching-subtasks)
 - [Data types and control flow](#data-types-and-control-flow)
 - [Namespaces and persistence](#namespaces-and-persistence)
-- [Variable interpolation and escaping](variable-interpolation-and-escaping)
+- [Variable interpolation and escaping](#variable-interpolation-and-escaping)
 - [Environment variables and language syntax](#environment-variables-and-language-syntax)
 - [File and directory manipulation](#file-and-directory-manipulation)
 - [Exception handling and tests](#exception-handling-and-tests)

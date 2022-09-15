@@ -29,8 +29,9 @@ class Runner:
             arguments = shlex.split(arguments, posix=True)
         self._arguments = list(arguments) if arguments else list()
         new_config = config if config else dict()
-        self._config = {"FailFast": False, "ReportException": True,
-                        "ShowTraceback": False, "AutoLineBreak": True}
+        self._config = {"FailFast": False, "ReportException": False,
+                        "ShowTraceback": False, "TestMode": False,
+                        "AutoLineBreak": True}
         self._config.update(new_config)
         self._task_body = None
         self._tempdir = TemporaryDirectory()
@@ -198,26 +199,28 @@ class Runner:
             thread.start()
         else:
             new_runner.start()
-            self._local_vars["R"] = new_runner.return_value
+            self.set("R", new_runner.return_value)
         return True
 
     def get(self, variable):
         number = util.str_to_number(variable)
         if number is not None:
             return number
-        namespace, var = util.split_var(variable)
-        item = None
-        if "." in var:
-            var, item = var.split(".")
-        elif "[" in var and "]" in var:
-            var, item = var.split("[")
-            item = item.rstrip("]")
+        if isinstance(variable, str):
+            var_info = util.scan_var(variable)
+        else:
+            var_info = variable
+        namespace = var_info["namespace"]
+        var = var_info["var"]
+        access = var_info["access"]
+        access_spec = var_info["access_spec"]
         # update some env vars
-        self._local_vars["CWD"] = os.getcwd()
-        self._local_vars["DATE"] = util.get_date()
-        self._local_vars["NOW"] = int(time.time())
-        self._local_vars["RANDOM"] = random.randint(0, 255)
-        self._local_vars["TIME"] = util.get_time()
+        self.set("CWD", os.getcwd())
+        self.set("DATE", util.get_date())
+        self.set("NOW", int(time.time()))
+        self.set("RANDOM", random.randint(0, 255))
+        self.set("TIME", util.get_time())
+        #
         vars_dict = dict()
         # global
         if namespace == "G":
@@ -228,23 +231,28 @@ class Runner:
         # local
         elif namespace == "L":
             vars_dict = self._local_vars
+        #
         try:
             val = vars_dict[var]
         except KeyError:
-            raise error.VariableError(variable)
-        if item and (isinstance(val, list)
-                     or isinstance(val, tuple)
-                     or isinstance(val, str)):
-            try:
-                return val[int(item)]
-            except ValueError as e:
-                raise error.Error("Index should be an integer.")
-        if item and isinstance(val, dict):
-            return val[item]
+            raise error.VariableError(var)
+        if access:
+            return val[access_spec]
         return val
 
     def set(self, variable, value):
-        namespace, var = util.split_var(variable)
+        if isinstance(variable, str):
+            var_info = util.scan_var(variable)
+        else:
+            var_info = variable
+        namespace = var_info["namespace"]
+        var = var_info["var"]
+        access = var_info["access"]
+        access_spec = var_info["access_spec"]
+        #if access:
+        #    data = self.get(var_info)
+        #    data[access_spec] = value
+        #    return
         if namespace == "G":
             with self._lock:
                 self._global_vars[var] = value
@@ -255,10 +263,21 @@ class Runner:
             if var.isupper() and (var not in constant.ENVIRONMENT_VARS):
                 msg = "New environment variables can't be created by the user."
                 raise error.Error(msg)
-            self._local_vars[var] = value
+            if access:
+                self._local_vars[var][access_spec] = value
+            else:
+                self._local_vars[var] = value
+
+    def clear(self, variable):
+        self.set(variable, None)
 
     def delete(self, variable):
-        namespace, var = util.split_var(variable)
+        if isinstance(variable, str):
+            var_info = util.scan_var(variable)
+        else:
+            var_info = variable
+        namespace = var_info["namespace"]
+        var = var_info["var"]
         try:
             if namespace == "G":
                 with self._lock:
@@ -300,12 +319,18 @@ class Runner:
             except IndexError:
                 return
             # update environment vars TASK and LINE
-            self._local_vars["TASK"] = self._task
-            self._local_vars["LINE"] = self._index + 1
+            self.set("TASK", self._task)
+            self.set("LINE", self._index + 1)
             try:
                 self._interpret(line)
             except error.Exit as e:
                 raise e
+            except error.FailedAssertion:
+                line = self.get("LINE")
+                task = self.get("TASK")
+                msg = "FAILED ASSERTION at line {} of [{}]"
+                print(msg.format(line, task))
+                return
             except error.Return as e:
                 self._is_success = True
                 return
@@ -315,7 +340,8 @@ class Runner:
                 sys.exit()
             except Exception as e:
                 error_name = e.__class__.__name__
-                self._local_vars["EXCEPTION"] = error_name
+                self.set("EXCEPTION", error_name)
+                self.set("TRACEBACK", traceback.format_exc())
                 msg = "{} at line {} of [{}] !"
                 line_number = self._index + 1
                 msg = msg.format(error_name, line_number, self._task)
@@ -334,7 +360,8 @@ class Runner:
                 #return
             else:
                 if line and not line.isspace():
-                    self._local_vars["EXCEPTION"] = str()
+                    self.clear("EXCEPTION")
+                    self.clear("TRACEBACK")
             self._index += 1
 
     def _interpret(self, line):
@@ -390,13 +417,20 @@ class Runner:
         #if not self._scopes or (self._scopes and self._scopes[-1]["active"]):
         #    data = self._compute_scope(name, data)
         #    active = True if data else False
-        data = self._compute_scope(name, data)
+        exception = None
+        try:
+            data = self._compute_scope(name, data)
+        except Exception as e:
+            exception = e
+            data = None
         active = True if data else False
         scope = {"name": name, "index": self._index,
                  "indents": self._indents, "data": data,
                  "active": active}
         self._scopes.append(scope)
         self._expected_indent = (self._indents + 1, True)
+        if exception:
+            raise exception
 
     def _update_expected_indent(self):
         if len(self._scopes) == 1:
@@ -449,11 +483,21 @@ class Runner:
         return data
 
     def _compute_while_scope(self, data):
+        # update N
+        n = data.get("N", -1) + 1
+        data["N"] = n
+        self.set("N", n)
+        #
         result = util.eval_assertion(self, data)
         data = data if result else None
         return data
 
     def _compute_for_scope(self, data):
+        # update N
+        n = data.get("N", -1) + 1
+        data["N"] = n
+        self.set("N", n)
+        #
         content_iterator = data.get("iterator")
         element = data.get("element")
         if not content_iterator:
@@ -470,7 +514,12 @@ class Runner:
         return data
 
     def _compute_from_scope(self, data):
-        start, end = data["start"], data["end"]
+        # update N
+        n = data.get("N", -1) + 1
+        data["N"] = n
+        self.set("N", n)
+        #
+        start, end = data["start_var"], data["end_var"]
         if isinstance(start, str):
             start, end = int(self.get(start)), int(self.get(end))
         order = data.get("order")
@@ -485,11 +534,16 @@ class Runner:
             if start < end:
                 return None
             start -= 1
-        data["start"], data["end"] = start, end
+        data["start_var"], data["end_var"] = start, end
         data["order"] = order
         return data
 
     def _compute_browse_scope(self, data):
+        # update N
+        n = data.get("N", -1) + 1
+        data["N"] = n
+        self.set("N", n)
+        #
         files_tag = data.get("files")
         dirs_tag = data.get("dirs")
         if not files_tag and not dirs_tag:
@@ -553,7 +607,6 @@ class Runner:
                 return False
         return True
 
-
     def _process_exception(self, e, line):
         if isinstance(e, error.InterpretationError):
             if e.args:
@@ -603,7 +656,8 @@ class Runner:
         for item in Usage:
             if item.name == element:
                 usage = item.value
+                break
         if not usage:
             return
-        usage = usage if isinstance(usage, str) else "\n".join(usage)
+        usage = "\n".join(usage) if isinstance(usage, (tuple, list)) else usage
         return "Usage: {}".format(usage)

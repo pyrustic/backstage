@@ -10,17 +10,18 @@ Usage:
     backstage <option> [<argument> ...]
     
 Options:
+    -i, --intro                 Show file introductory text
     -t, --tasks                 Show the list of tasks
     -T, --Tasks                 Show the descriptive list of tasks
     -d, --doc <task>            Show documentation for a specific task
     -c, --check [<task> ...]    Run tests
-    -s, --search <pattern>      Search for a task by its name
-    -S, --Search <pattern>      Search for a task by keyword
+    -C, --Check [<task> ...]    Run tests in debug mode
+    -s, --search <task>         Search for a task by its name
+    -S, --Search <task>         Search for a task by keyword
     -h, --help                  Show this information page
 
-Note:
-    The Pattern argument of the Search option uses glob-like syntax
-    which allows wildcards '*' and '?'.
+    The <task> string can use a glob-like syntax that allows 
+    wildcards '*' and '?'. Therefore, 'task1' is identical to 'task*'.
     
 Visit the webpage: https://github.com/pyrustic/backstage\
 """

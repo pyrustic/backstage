@@ -12,7 +12,7 @@ Error classes
 >
 > **Constants:** &nbsp; None
 
-# Class Exit
+# Class FailedAssertion
 Common base class for all non-exit exceptions.
 
 ## Base Classes

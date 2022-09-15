@@ -80,13 +80,11 @@ class Backstage:
         sys.path.insert(0, self._directory)
         # load tasks
         tasks = util.get_tasks(self._directory)
+        if not tasks:
+            return
         self._tasks = {key: val for key, val in tasks.items() if not key.endswith(".doc")}
         # load stored vars
-        self._database_vars = shared.json_readonly("database.json",
+        database_vars = shared.json_readonly("database.json",
                                                    default=dict(),
                                                    directory=self._cache_dir)
-
-    def _run_init_task(self, arguments=None):
-        if "" not in self._tasks:
-            return
-        return self.run("", arguments=arguments)
+        self._database_vars = database_vars if database_vars else dict()

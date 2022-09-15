@@ -35,7 +35,7 @@ No class attributes.
 
 
 # All Methods
-[\_\_init\_\_](#__init__) &nbsp;&nbsp; [gen\_rid](#gen_rid) &nbsp;&nbsp; [run](#run) &nbsp;&nbsp; [\_run\_init\_task](#_run_init_task) &nbsp;&nbsp; [\_setup](#_setup)
+[\_\_init\_\_](#__init__) &nbsp;&nbsp; [gen\_rid](#gen_rid) &nbsp;&nbsp; [run](#run) &nbsp;&nbsp; [\_setup](#_setup)
 
 ## \_\_init\_\_
 Initialize self.  See help(type(self)) for accurate signature.
@@ -76,22 +76,6 @@ arguments is either None, a string or a list of strings
 
 
 **Signature:** (self, task, arguments=None, config=None)
-
-
-
-
-
-**Return Value:** None
-
-[Back to Top](#module-overview)
-
-
-## \_run\_init\_task
-No description
-
-
-
-**Signature:** (self, arguments=None)
 
 
 

@@ -37,5 +37,9 @@ class Continue(Error):
     pass
 
 
+class FailedAssertion(Error):
+    pass
+
+
 class Exit(Error):
     pass

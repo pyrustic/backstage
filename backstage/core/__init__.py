@@ -37,7 +37,9 @@ def append_to_file(runner, items):
 
 def assertion_handler(runner, items):
     result = util.eval_assertion(runner, items)
-    runner.local_vars["R"] = int(result)
+    runner.set("R", int(result))
+    if not result and runner.config["TestMode"]:
+        raise error.FailedAssertion
 
 
 def branch_subtask(runner, items):
@@ -102,7 +104,7 @@ def check_var(runner, items):
     try:
         content = runner.get(variable)
     except error.VariableError as e:
-        runner.local_vars["R"] = str()
+        runner.clear("R")
     else:
         datatype = "str"
         types_map = [(list, "list"), (tuple, "list"), (int, "int"),
@@ -110,7 +112,7 @@ def check_var(runner, items):
         for x in types_map:
             if isinstance(content, x[0]):
                 datatype = x[1]
-        runner.local_vars["R"] = datatype
+        runner.set("R", datatype)
 
 
 def clear_var(runner, items):
@@ -235,9 +237,13 @@ def enter_user_data(runner, items):
         return
     text = items.get("text", str())
     text = util.strip_delimiters(text)
-    text = util.interpolate(runner, text)
+    text = util.interpolate(runner, text, quote=False)
     value = input(text)
     runner.set(variable, value)
+
+
+def exit_handler(runner, items):
+    raise error.Exit
 
 
 def expose(runner, items):
@@ -274,7 +280,7 @@ def find(runner, items):
     timestamp2 = runner.get(timestamp2_var) if timestamp2_var else None
     directory = util.normpath(directory)
     resources = list()
-    runner.local_vars["R"] = str()
+    runner.clear("R")
     if find_all:
         for root, dirs, files in os.walk(directory):
             if category == "paths":
@@ -304,16 +310,26 @@ def find(runner, items):
             if util.match_resource(path, regex, field, preposition, timestamp1,
                                    timestamp2):
                 resources.append(path)
-    runner.local_vars["R"] = resources
+    runner.set("R", resources)
 
 
 def get_handler(runner, items):
     element = items.get("element")
-    index = items.get("index")
+    index_var = items.get("index_var")
     variable = items.get("var")
     tag = items.get("tag")
+    index = runner.get(index_var)
     index = int(index)
     content_iterator = util.get_content_iterator(runner, element, variable, tag)
+    if index < 0:
+        cache = [val for val in content_iterator]
+        try:
+            val = cache[index]
+        except IndexError:
+            raise error.Error("Index error.")
+        else:
+            runner.set("R", val)
+            return
     for i, val in enumerate(content_iterator):
         if i == index:
             runner.set("R", val)
@@ -353,7 +369,7 @@ def poke_resource(runner, items):
     path = runner.get(path_var)
     path = util.normpath(path)
     if not os.path.exists(path):
-        runner.local_vars["R"] = str()
+        runner.clear("R")
         return
     is_dir = is_file = 0
     if os.path.isfile(path):
@@ -375,7 +391,7 @@ def poke_resource(runner, items):
     data["is_file"] = is_file
     data["is_dir"] = is_dir
     data["path"] = path
-    runner.local_vars["R"] = data
+    runner.set("R")
 
 
 def prepend_file(runner, items):
@@ -400,7 +416,7 @@ def prepend_file(runner, items):
 def print_text(runner, items):
     text = items.get("text", str())
     text = util.strip_delimiters(text)
-    text = util.interpolate(runner, text)
+    text = util.interpolate(runner, text, quote=False)
     end = str()
     auto_line_break = runner.config.get("AutoLineBreak")
     if auto_line_break:
@@ -415,7 +431,7 @@ def push(runner, items):
     cache = list()
     for var in variables:
         data = runner.get(var)
-        if isinstance(data, list) or isinstance(data, tuple):
+        if isinstance(data, (list, tuple)):
             data = "\n".join(data)
         cache.append(data)
     push_cache = "\n".join(cache)
@@ -423,20 +439,22 @@ def push(runner, items):
 
 
 def read_file(runner, items):
-    index = items.get("index")
+    index_var = items.get("index_var")
     filename_var = items.get("filename_var")
     filename = runner.get(filename_var)
     filename = util.normpath(filename)
     if not os.path.isfile(filename):
         msg = "File not found: {}".format(filename)
         raise error.Error(msg)
-    runner.local_vars["R"] = str()
-    if index == "*":
+    runner.clear("R")
+    if index_var == "*":
         with open(filename, "r") as file:
             data = file.read()
-        runner.local_vars["R"] = data
+        runner.set("R", data)
         return
+    index = runner.get(index_var)
     index = int(index)
+    """
     if index < 0:
         with open(filename, "r") as file:
             data = file.read()
@@ -446,12 +464,22 @@ def read_file(runner, items):
             except IndexError:
                 raise error.Error("Index error.")
             else:
-                runner.local_vars["R"] = line
+                runner.set("R", line)
                 return
+    """
     iter_content = util.iterate_content(pathlib.Path(filename), "line")
+    if index < 0:
+        lines = [line for line in iter_content]
+        try:
+            line = lines[index]
+        except IndexError:
+            raise error.Error("Index error.")
+        else:
+            runner.set("R", line)
+            return
     for i, line in enumerate(iter_content):
         if i == index:
-            runner.local_vars["R"] = line
+            runner.set("R", line)
             return
     raise error.Error("Index error.")
 
@@ -469,7 +497,7 @@ def replace_text(runner, items):
 
 def return_handler(runner, items):
     variable = items.get("var")
-    return_value = str()
+    return_value = None
     if variable:
         return_value = runner.get(variable)
     runner.quit(return_value)
@@ -482,25 +510,25 @@ def set_variable(runner, items):
         msg2 = "Valid assignment tags: {}".format("  ".join(constant.ASSIGNMENT_TAGS))
         msg = "{}\n{}".format(msg1, msg2)
         raise error.Error(msg)
-    namespace, var = util.split_var(variable)
-    # check if var name is valid Python identifier
-    if not var.isidentifier():
-        msg = "Invalid identifier '{}'.".format(variable)
-        raise error.Error(msg)
-    # update tag (default to "txt")
+    # update tag (default to "str")
     tag = tag if tag else "str"
     # strip out backticks
     value = util.strip_delimiters(value)
     # perform interpolation if literal is not "raw"
     if tag != "raw":
         value = util.interpolate(runner, value, quote=False)
+    var_info = util.scan_var(variable)
     # cast !
+    if var_info["access"]:
+        if tag in ("list", "dict"):
+            tag = "str"
     value = util.apply_assignment_tag(value, tag)
-    runner.set(variable, value)
+    runner.set(var_info, value)
 
 
 def sleep(runner, items):
-    seconds = items.get("seconds")
+    seconds_var = items.get("seconds_var")
+    seconds = runner.get(seconds_var)
     s = float(seconds)
     time.sleep(s)
 
@@ -532,9 +560,9 @@ def spawn(runner, items):
     error_str = info.error.decode("utf-8") if info.error else str()
     return_code = (info.return_codes
                    if is_pipeline else info.return_code)
-    runner.local_vars["R"] = return_code
-    runner.local_vars["OUTPUT"] = output_str
-    runner.local_vars["ERROR"] = error_str
+    runner.set("R", return_code)
+    runner.set("OUTPUT", output_str)
+    runner.set("ERROR", error_str)
 
 
 def split_text(runner, items):
@@ -606,6 +634,7 @@ HANDLERS = {Pattern.APPEND.name: append_to_file,
             Pattern.DEFAULT.name: default_var,
             Pattern.DROP.name: drop_var,
             Pattern.ENTER.name: enter_user_data,
+            Pattern.EXIT.name: exit_handler,
             Pattern.EXPOSE.name: expose,
             Pattern.FAIL.name: fail,
             Pattern.FIND.name: find,
@@ -632,7 +661,11 @@ HANDLERS = {Pattern.APPEND.name: append_to_file,
 
 def _update_return_type(r):
     if r is None:
-        return ""
+        return r
+    if r is True:
+        return 1
+    if r is False:
+        return 0
     if isinstance(r, str):
         return r
     if isinstance(r, list):
@@ -646,5 +679,5 @@ def _update_return_type(r):
     if isinstance(r, float):
         return r
     msg1 = "Python functions should return one of these types: "
-    msg2 = "str, int, float, list, dict, tuple, None"
+    msg2 = "str, int, float, list, dict, tuple, True, False, None"
     raise error.Error("".join([msg1, msg2]))

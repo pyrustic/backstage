@@ -1,6 +1,10 @@
 from enum import Enum
 
 
+# namespace, base, index, key
+VARIABLE_PATTERN = r"""\A(((?P<namespace>L|G|D):)|)(?P<base>[\S]+?)((\[(?P<index>-?[0-9]+)\])|(\.(?P<key>[\S]+))|)\Z"""
+
+
 # var1, comparison1, var2, logic, var3, comparison2, var4
 ASSERT_PATTERN = r"""(?P<var1>[\S]+) (?P<comparison1>==|!=|<=|>=|<|>|in|!in|rin|!rin|matches|!matches) (?P<var2>[\S]+)(( (?P<logic>and|or) (?P<var3>[\S]+) (?P<comparison2>==|!=|<=|>=|<|>|in|!in|rin|!rin|matches|!matches) (?P<var4>[\S]+))|)[\s]*\Z"""
 
@@ -63,6 +67,9 @@ class Pattern(Enum):
     # indent, var, text
     ENTER = r"""\A(?P<indent>[\s]*)>( (?P<var>[\S]+)(| : (?P<text>[\s\S]*))|)[\s]*\Z"""
 
+    # indent
+    EXIT = r"""\A(?P<indent>[\s]*)exit[\s]*\Z"""
+
     # indent, vars
     EXPOSE = r"""\A(?P<indent>[\s]*)expose (?P<vars>[\s\S]*?)[\s]*\Z"""
 
@@ -75,11 +82,11 @@ class Pattern(Enum):
     # indent, element, var, tag
     FOR = r"""\A(?P<indent>[\s]*)for (?P<element>char|item|line) in (?P<var>[\S]+)( \((?P<tag>file)\)|)[\s]*\Z"""
 
-    # indent, start, end
-    FROM = r"""\A(?P<indent>[\s]*)from (?P<start>[\S]+) to (?P<end>[\S]+)[\s]*\Z"""
+    # indent, start_var, end_var
+    FROM = r"""\A(?P<indent>[\s]*)from (?P<start_var>[\S]+) to (?P<end_var>[\S]+)[\s]*\Z"""
 
-    # indent, element, index, var, tag
-    GET = r"""\A(?P<indent>[\s]*)get (?P<element>char|item|line) (?P<index>-?[0-9]+) from (?P<var>[\S]+)( \((?P<tag>file)\)|)[\s]*\Z"""
+    # indent, element, index_var, var, tag
+    GET = r"""\A(?P<indent>[\s]*)get (?P<element>char|item|line) (?P<index_var>[\S]+) from (?P<var>[\S]+)( \((?P<tag>file)\)|)[\s]*\Z"""
 
     # indent, var1, comparison1, var2, logic, var3, comparison2, var4
     IF = r"""\A(?P<indent>[\s]*)if """ + ASSERT_PATTERN
@@ -108,8 +115,8 @@ class Pattern(Enum):
     # indent, vars
     PUSH = r"""\A(?P<indent>[\s]*)push (?P<vars>[\s\S]*?)[\s]*\Z"""
 
-    # indent, index, filename_var
-    READ = r"""\A(?P<indent>[\s]*)read (?P<index>\*|-?[0-9]) from (?P<filename_var>[\S]+)[\s]*\Z"""
+    # indent, index_var, filename_var
+    READ = r"""\A(?P<indent>[\s]*)read (?P<index_var>\*|[\S]+) from (?P<filename_var>[\S]+)[\s]*\Z"""
 
     # indent, regex_var, text_var, replacement_var
     REPLACE = r"""\A(?P<indent>[\s]*)replace (?P<regex_var>[\S]+) in (?P<text_var>[\S]+) with (?P<replacement_var>[\S]+)[\s]*\Z"""
@@ -120,8 +127,8 @@ class Pattern(Enum):
     # indent, var, tag, value
     SET = r"""\A(?P<indent>[\s]*)set (?P<var>[\S]+) (|\((?P<tag>raw|str|list|dict|int|float|date|time|dtime|tstamp)\) )= (?P<value>[\s\S]*)\Z"""
 
-    # seconds
-    SLEEP = r"""\A(?P<indent>[\s]*)sleep (?P<seconds>[0-9]+(\.[0-9]+)?)[\s]*\Z"""
+    # seconds_var
+    SLEEP = r"""\A(?P<indent>[\s]*)sleep (?P<seconds_var>[\S]+)[\s]*\Z"""
 
     # ident, mode, program, arguments
     #SPAWN = r"""\A(?P<indent>[\s]*)(?P<mode>\$|\(\$\)) (?P<command>[\s\S]+?)[\s]*\Z"""

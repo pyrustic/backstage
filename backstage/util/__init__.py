@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import OrderedDict
 from string import Formatter
 from subrun import pipeline as subrun_pipeline
-from backstage.pattern import Pattern
+from backstage.pattern import Pattern, VARIABLE_PATTERN
 from backstage import constant, error
 
 
@@ -38,7 +38,7 @@ def scan(line):
 
 
 def get_tasks(directory):
-    return shared.jesth_readonly(constant.BASENAME, default=dict(),
+    return shared.jesth_readonly(constant.BASENAME, default=None,
                                  directory=directory)
 
 
@@ -68,6 +68,7 @@ def create_env_vars(arguments, tempdir):
     env_vars["TIME"] = str(get_time())
     env_vars["TIMEOUT"] = int(30)
     env_vars["TMP"] = str(tempdir.name)
+    env_vars["TRACEBACK"] = str()
     env_vars["TRASH"] = str(constant.TRASH_DIR)
     env_vars["TRUE"] = int(1)
     env_vars["ZERO"] = int(0)
@@ -117,17 +118,20 @@ def str_to_dict(text):
     return data
 
 
-def dict_to_str(data, quote):
+def dict_to_str(data):
     cache = list()
     for key, val in data.items():
-        if quote:
-            key, val = shlex.quote(str(key)), shlex.quote(str(val))
+        key = str() if key is None else key
+        val = str() if val is None else val
+        key, val = shlex.quote(str(key)), shlex.quote(str(val))
         keyval = "{}={}".format(key, val)
         cache.append(keyval)
     return " ".join(cache)
 
 
 def str_to_number(text):
+    if not isinstance(text, str):
+        return None
     cache = text.split(".")
     for x in cache:
         if not x:
@@ -146,11 +150,11 @@ def str_to_number(text):
 
 def interpolate(runner, text, quote=True, heredoc=True):
     """perform string interpolation"""
-    runner.local_vars["CWD"] = os.getcwd()
-    runner.local_vars["DATE"] = get_date()
-    runner.local_vars["NOW"] = time.time()
-    runner.local_vars["RANDOM"] = random.randint(0, 255)
-    runner.local_vars["TIME"] = get_time()
+    runner.set("CWD", os.getcwd())
+    runner.set("DATE", get_date())
+    runner.set("NOW", time.time())
+    runner.set("RANDOM", random.randint(0, 255))
+    runner.set("TIME", get_time())
     if heredoc:
         text = unescape(text)
     formatter = Formatter()
@@ -175,37 +179,51 @@ def _expand_interpolation_field(runner, field, quote):
 
 
 def stringify(val, quote):
+    if val is None:
+        return str()
     if isinstance(val, str):
         if quote:
             return shlex.quote(val)
         return val
-    if isinstance(val, list) or isinstance(val, tuple):
-        updated_val = [str(item) for item in val]
-        if quote:
-            return shlex.join(updated_val)
-        return " ".join(updated_val)
+    if isinstance(val, (list, tuple)):
+        updated_val = list()
+        for item in val:
+            if item is None:
+                updated_val.append(str())
+                continue
+            updated_val.append(str(item))
+        return shlex.join(updated_val)
     if isinstance(val, dict):
-        return dict_to_str(val, quote)
-    if isinstance(val, int) or isinstance(val, float):
+        return dict_to_str(val)
+    if isinstance(val, (int, float)):
         return str(val)
 
 
-def split_var(variable):
-    """
-    Split into: ('namespace', 'variable name')
-    """
-    if ":" not in variable:
-        return "L", variable
-    items = variable.split(":")
-    if len(items) > 2:
-        msg = "Only one level of namespace is allowed."
+def scan_var(variable):
+    token = oscan.match(variable, pattern=VARIABLE_PATTERN)
+    if not token:
+        msg = "Failed to scan variable '{}'"
+        raise error.Error(msg.format(variable))
+    namespace = token.groups_dict.get("namespace")
+    base = token.groups_dict.get("base")
+    index = token.groups_dict.get("index")
+    key = token.groups_dict.get("key")
+    # check if base is valid Python identifier
+    if not base.isidentifier():
+        msg = "Invalid identifier '{}'.".format(base)
         raise error.Error(msg)
-    namespace, var = items
-    if namespace not in constant.NAMESPACES:
-        msg = "Unknown namespace '{}'. Valid namespaces: {}"
-        msg = msg.format(namespace, ", ".join(constant.NAMESPACES))
-        raise error.Error(msg)
-    return namespace, var
+    if not namespace:
+        namespace = "L"
+    access = access_spec = None
+    for item, name in ((key, "key"), (index, "index")):
+        if item is not None:
+            if name == "index":
+                item = int(item)
+            access = name
+            access_spec = item
+    info = {"namespace": namespace, "var": base,
+            "access": access, "access_spec": access_spec}
+    return info
 
 
 def match_resource(path, regex=None, field=None, preposition=None,
@@ -395,7 +413,10 @@ def apply_assignment_tag(value, tag):
         value = value.strip()
         if not is_safe(value):
             raise error.Error("Unsafe expression !")
-        value = calc(value)
+        try:
+            value = calc(value)
+        except Exception as e:
+            raise error.Error("Unable to perform calculation !")
         if tag == "int":
             value = int(value)
         elif tag == "float":
@@ -543,8 +564,8 @@ def iterate_content(content, spec):
             yield x
     elif spec == "char":
         if isinstance(content, dict):
-            content = dict_to_str(content, True)
-        elif isinstance(content, list) or isinstance(content, tuple):
+            content = dict_to_str(content)
+        elif isinstance(content, (list, tuple)):
             content = shlex.join(content)
         else:
             content = str(content)
@@ -556,7 +577,7 @@ def iterate_content(content, spec):
             for key, val in content.items():
                 cache.append([key, val])
             content = cache
-        elif isinstance(content, list) or isinstance(content, tuple):
+        elif isinstance(content, (list, tuple)):
             pass
         else:
             content = shlex.split(str(content), posix=True)
@@ -564,8 +585,8 @@ def iterate_content(content, spec):
             yield item
     elif spec == "line":
         if isinstance(content, dict):
-            content = dict_to_str(content, True)
-        elif isinstance(content, list) or isinstance(content, tuple):
+            content = dict_to_str(content)
+        elif isinstance(content, (list, tuple)):
             content = shlex.join(content)
         else:
             content = str(content)
@@ -649,14 +670,6 @@ def check_pipeline(command):
     return None
 
 
-def check_variable():
-    pass
-
-
-def check_resource(rtype="file"):
-    pass
-
-
 def get_date():
     return timestamp_to_date()
 
@@ -687,43 +700,3 @@ def time_to_timestamp(val):
 
 def datetime_to_timestamp(val):
     return int(datetime.strptime(val, "%Y-%m-%d %H:%M:%S").timestamp())
-
-
-# TODO: delete OLDcopyto
-def OLDcopyto(src, dest):  # TODO delete me
-    src = normpath(src)
-    dest = normpath(dest)
-    if not os.path.exists(src):
-        msg = "The source resource doesn't exist: {}".format(src)
-        raise error.Error(msg)
-    if os.path.isfile(src):
-        if not os.path.isdir(os.path.dirname(dest)):
-            os.makedirs(os.path.dirname(dest))
-        shutil.copyfile(src, dest)
-    elif os.path.isdir(src):
-        for root, dirs, files in os.walk(src):
-            relpath = os.path.relpath(root, src)
-            for d in dirs:
-                new_dir = os.path.join(dest, relpath, d)
-                if not os.path.exists(new_dir):
-                    os.makedirs(new_dir)
-            for f in files:
-                shutil.copyfile(os.path.join(root, f), os.path.join(dest, relpath, f))
-
-
-# TODO: delete OLDget_callable
-def OLDget_callable(spec):  # TODO: delete me
-    cache = spec.split(":")
-    if len(cache) == 2:
-        module_name, callable_name = cache
-    else:
-        module_name, callable_name = cache[0], "main"
-    try:
-        module = importlib.import_module(module_name)
-    except ModuleNotFoundError as e:
-        return None
-    try:
-        callable_object = getattr(module, callable_name)
-    except AttributeError as e:
-        return None
-    return callable_name, callable_object

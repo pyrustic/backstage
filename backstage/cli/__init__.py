@@ -14,6 +14,7 @@ class Cli:
         self._backstage = Backstage(directory)
         self._tasks = dict()
         self._docs = dict()
+        self._intro = None
         self._setup()
 
     @property
@@ -36,30 +37,36 @@ class Cli:
             command = shlex.split(command, posix=True)
         name = command[0]
         args = command[1:]
-        if name in ("-t", "--tasks"):
+        if not self._tasks and name not in ("-h", "--help"):
+            print("There is no 'backstage.tasks' file in this directory !")
+            return
+        if name in ("-i", "--intro"):
+            self._print_intro(*args)
+        elif name in ("-t", "--tasks"):
             self._print_tasks_list(*args)
         elif name in ("-T", "--Tasks"):
             self._print_descriptive_tasks_list(*args)
         elif name in ("-d", "--doc"):
             self._print_task_description(*args)
         elif name in ("-c", "--check"):
-            self._run_tests(*args)
+            self._check_tasks(*args)
+        elif name in ("-C", "--Check"):
+            self._check_tasks_debug(*args)
         elif name in ("-s", "--search"):
             self._search_task(*args)
         elif name in ("-S", "--Search"):
             self._search_keyword(*args)
-        #elif name == "--tutorial":
-        #    self._show_tutorial(*args)
         elif name in ("-h", "--help"):
             print(text.INTRO)
             print()
             print(text.HELP)
         else:
-            task = name
-            #runner = self._backstage.run_init_task(args)
-            self._backstage.run(task, args)
+            self._run_task(name, *args)
 
     def loop(self):
+        if not self._tasks:
+            print("There is no 'backstage.tasks' file in this directory !")
+            return
         print(text.INTRO)
         print("Press 'Ctrl-c' or 'Ctrl-d' to quit.")
         print("Type '--help' or '-h' to show more information.")
@@ -78,7 +85,8 @@ class Cli:
             self._update_history(history_length)
 
     def _setup(self):
-        self._load_data()
+        if not self._load_data():
+            return
         readline.parse_and_bind("tab: complete")
         self._activate_autocomplete()
         history_filename = os.path.join(constant.BACKSTAGE_HOME, "history")
@@ -93,6 +101,9 @@ class Cli:
 
     def _load_data(self):
         tasks = util.get_tasks(self._directory)
+        if not tasks:
+            return False
+        self._intro = tasks.get("")
         for key, val in tasks.items():
             if key.startswith("_") or key == "":
                 continue
@@ -100,6 +111,7 @@ class Cli:
                 self._docs[key] = val
                 continue
             self._tasks[key] = val
+        return True
 
     def _wait_input(self):
         entry = None
@@ -125,6 +137,16 @@ class Cli:
                 readline.remove_history_item(expected_length)
             except Exception:
                 break
+
+    def _run_task(self, name, *args):
+        task = self._get_task(name)
+        if not task:
+            return
+        self._backstage.run(task, args)
+
+    def _print_intro(self, *args):
+        intro = self._intro if self._intro else list()
+        print("\n".join(intro).strip("- \n"))
 
     def _print_tasks_list(self, *args):
         keys = self._tasks.keys()
@@ -162,33 +184,22 @@ class Cli:
         if not args:
             print("Incomplete command. The task name is missing.")
             return
-        task = args[0]
+        task = self._get_task(args[0])
+        if not task:
+            return
         try:
             doc = self._docs[task + ".doc"]
         except KeyError as e:
             msg = "Documentation for '{}' doesn't exist."
             print(msg.format(task))
         else:
-            print("\n".join(doc).strip())
+            print("\n".join(doc).strip("- \n"))
 
-    def _run_tests(self, *args):
-        candidates = list()
-        if args:
-            for item in args:
-                candidates.append(item + ".test")
-        else:
-            for task in self._tasks.keys():
-                if task.endswith(".test"):
-                    candidates.append(task)
-        config = {"FailFast": True, "ReportException": True,
-                  "ShowTraceback": True}
-        for test in candidates:
-            if test not in self._tasks:
-                msg = "Test skipped: '{}' doesn't exist."
-                print(msg.format(test))
-            else:
-                self._backstage.run(test, config)
-            print()
+    def _check_tasks(self, *args):
+        self._run_tests(*args, debug=False)
+
+    def _check_tasks_debug(self, *args):
+        self._run_tests(*args, debug=True)
 
     def _search_task(self, *args):
         if not args:
@@ -196,12 +207,7 @@ class Cli:
             print(msg)
             return
         pattern = args[0]
-        pattern = pattern.replace("?", r".")
-        pattern = pattern.replace("*", r"[\S]*")
-        results = list()
-        for task in self._tasks.keys():
-            if re.fullmatch(pattern, task):
-                results.append(task)
+        results = self._find_tasks_by_pattern(pattern)
         if not results:
             print("No results found.")
             return
@@ -219,23 +225,8 @@ class Cli:
             msg = "Incomplete command. The pattern is missing."
             print(msg)
             return
-        pattern = args[0]
-        pattern = pattern.replace("?", r".")
-        pattern = pattern.replace("*", r"[\S]*?")
-        results = list()
-        for task, body in self._docs.items():
-            words = list()
-            for line in body:
-                for word in line.split():
-                    words.append(word)
-            for word in words:
-                if re.fullmatch(pattern, word):
-                    cache = task.split(".")
-                    del cache[-1]
-                    cache = ".".join(cache)
-                    if cache in self._tasks:
-                        results.append(cache)
-                    break
+        keyword = args[0]
+        results = self._find_tasks_by_keyword(keyword)
         if not results:
             print("No results found.")
             return
@@ -248,8 +239,82 @@ class Cli:
         cache = textwrap.indent(cache, "    ")
         print(cache)
 
-    def _show_tutorial(self, *args):
-        page = args[0] if args else "0"
+    def _get_task(self, pattern):
+        if "*" in pattern or "?" in pattern:
+            results = self._find_tasks_by_pattern(pattern)
+            n = len(results)
+            if n == 0:
+                print("No matches.")
+                return None
+            if n > 1:
+                print("Many tasks match this pattern:")
+                cache = "  ".join(sorted(results))
+                cache = textwrap.wrap(cache)
+                cache = "\n".join(cache)
+                cache = textwrap.indent(cache, "    ")
+                print(cache)
+                return None
+            if n == 1:
+                task = results[0]
+                return task
+            return None
+        else:
+            return pattern
+
+    def _find_tasks_by_pattern(self, pattern):
+        pattern = pattern.replace("?", r".")
+        pattern = pattern.replace("*", r"[\S]*")
+        results = list()
+        for task in self._tasks.keys():
+            if re.fullmatch(pattern, task):
+                results.append(task)
+        return results
+
+    def _find_tasks_by_keyword(self, keyword):
+        keyword = keyword.replace("?", r".")
+        keyword = keyword.replace("*", r"[\S]*?")
+        results = list()
+        for task, body in self._docs.items():
+            words = list()
+            for line in body:
+                for word in line.split():
+                    words.append(word)
+            for word in words:
+                if re.fullmatch(keyword, word):
+                    cache = task.split(".")
+                    del cache[-1]
+                    cache = ".".join(cache)
+                    if cache in self._tasks:
+                        results.append(cache)
+                    break
+        return results
+
+    def _run_tests(self, *args, debug=False):
+        candidates = list()
+        if args:
+            for item in args:
+                task = self._get_task(item)
+                if not task:
+                    return
+                candidates.append(task + ".test")
+        else:
+            for task in self._tasks.keys():
+                if task.endswith(".test"):
+                    candidates.append(task)
+        report_exception = show_traceback = False
+        if debug:
+            report_exception = show_traceback = True
+        config = {"FailFast": False, "ReportException": report_exception,
+                  "ShowTraceback": show_traceback, "TestMode": True}
+        n = len(candidates)
+        for i, test in enumerate(candidates):
+            if test not in self._tasks:
+                msg = "Test skipped: '{}' doesn't exist."
+                print(msg.format(test))
+            else:
+                self._backstage.run(test, config=config)
+            if i + 1 != n:
+                print()
 
 
 def complete_callback(text, state, words=None):

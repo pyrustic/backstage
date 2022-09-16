@@ -547,8 +547,8 @@ def spawn(runner, items):
     command = util.interpolate(runner, command)
     if not command or command.isspace():
         raise error.InterpretationError
-    stdout = util.get_stream_value(runner, "STDOUT")
-    stderr = util.get_stream_value(runner, "STDERR")
+    stdout = util.get_stream(runner, "STDOUT")
+    stderr = util.get_stream(runner, "STDERR")
     commands = util.check_pipeline(command)
     is_pipeline = True if commands else False
     if is_pipeline:

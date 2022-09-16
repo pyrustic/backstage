@@ -535,14 +535,21 @@ def branch(runner, subtask, arguments, new_thread=False):
     runner.branch(subtask, arguments, new_thread)
 
 
-def get_stream_value(runner, stream):
+def get_stream(runner, stream):
     value = runner.local_vars[stream]
     value = value if value else None
     if value is None:
         return None
     if value == "/dev/null":
         return subprocess.DEVNULL
-    return normpath(value)
+    path = normpath(value)
+    if not os.path.exists(path):
+        parent = os.path.dirname(path)
+        if not os.path.exists(parent):
+            os.makedirs(parent)
+        with open(path, "w") as file:
+            pass
+    return open(path, "w")
 
 
 def get_content_iterator(runner, element, variable, tag):

@@ -491,30 +491,32 @@ def cast_datetime(value, src, dest):
             return timestamp_to_datetime(cache)
 
 
-def spawn(runner, command, input_data, stdout, stderr, captured=False):
-    timeout = runner.local_vars["TIMEOUT"]
+def spawn(runner, command, input_data, stdin, stdout, stderr, captured=False):
+    timeout = runner.get("TIMEOUT")
     timeout = timeout if timeout else None
     try:
         if captured:
             info = subrun.capture(command, input=input_data, timeout=timeout)
         else:
-            info = subrun.run(command, input=input_data, stdout=stdout,
-                              stderr=stderr, timeout=timeout, cwd=os.getcwd())
+            info = subrun.run(command, input=input_data, stdin=stdin,
+                              stdout=stdout, stderr=stderr, timeout=timeout,
+                              cwd=os.getcwd())
     except Exception as e:
         raise error.SubprocessError
     return info
 
 
-def spawn_pipeline(runner, commands, input_data, stdout, stderr, captured=False):
-    timeout = runner.local_vars["TIMEOUT"]
+def spawn_pipeline(runner, commands, input_data, stdin, stdout, stderr, captured=False):
+    timeout = runner.get("TIMEOUT")
     timeout = timeout if timeout else None
     try:
         if captured:
             info = subrun_pipeline.capture(*commands, input=input_data, cwd=os.getcwd(),
                                            timeout=timeout)
         else:
-            info = subrun_pipeline.run(*commands, input=input_data, stdout=stdout,
-                                       stderr=stderr, cwd=os.getcwd(), timeout=timeout)
+            info = subrun_pipeline.run(*commands, input=input_data, stdin=stdin,
+                                       stdout=stdout, stderr=stderr,
+                                       cwd=os.getcwd(), timeout=timeout)
     except Exception as e:
         raise error.SubprocessError
     return info
@@ -536,7 +538,7 @@ def branch(runner, subtask, arguments, new_thread=False):
 
 
 def get_stream(runner, stream):
-    value = runner.local_vars[stream]
+    value = runner.get(stream)
     value = value if value else None
     if value is None:
         return None
@@ -549,6 +551,8 @@ def get_stream(runner, stream):
             os.makedirs(parent)
         with open(path, "w") as file:
             pass
+    if stream == "STDIN":
+        return open(path, "r")
     return open(path, "w")
 
 

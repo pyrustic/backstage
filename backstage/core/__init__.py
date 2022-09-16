@@ -251,11 +251,13 @@ def expose(runner, items):
     if not variables:
         raise error.InterpretationError
     for variable in variables:
-        namespace, var = util.split_var(variable)
+        var_info = util.scan_var(variable)
+        namespace = var_info["namespace"]
+        var = var_info["var"]
         if namespace != "L" or not var.isidentifier or var.isupper():
             msg = "Only user-defined local variables can be exposed."
             raise error.Error(msg)
-        value = runner.get(variable)
+        value = runner.get(var_info)
         with runner.lock:
             runner.global_vars[var] = value
 
@@ -547,15 +549,18 @@ def spawn(runner, items):
     command = util.interpolate(runner, command)
     if not command or command.isspace():
         raise error.InterpretationError
-    stdout = util.get_stream(runner, "STDOUT")
-    stderr = util.get_stream(runner, "STDERR")
+    stdin = stdout = stderr = None
+    if not captured:  # TODO: allow 'capture' to work with STDIN (probably will need to update subrun too)
+        stdin = util.get_stream(runner, "STDIN")
+        stdout = util.get_stream(runner, "STDOUT")
+        stderr = util.get_stream(runner, "STDERR")
     commands = util.check_pipeline(command)
     is_pipeline = True if commands else False
     if is_pipeline:
         info = util.spawn_pipeline(runner, commands, input_data,
-                                   stdout, stderr, captured)
+                                   stdin, stdout, stderr, captured)
     else:
-        info = util.spawn(runner, command, input_data, stdout, stderr, captured)
+        info = util.spawn(runner, command, input_data, stdin, stdout, stderr, captured)
     output_str = info.output.decode("utf-8") if info.output else str()
     error_str = info.error.decode("utf-8") if info.error else str()
     return_code = (info.return_codes
@@ -588,13 +593,15 @@ def store(runner, items):
     if not variables:
         raise error.InterpretationError
     for variable in variables:
-        namespace, var = util.split_var(variable)
+        var_info = util.scan_var(variable)
+        namespace = var_info["namespace"]
+        var = var_info["var"]
         if namespace != "L" or not var.isidentifier or var.isupper():
             msg = "Only user-defined local variables can be stored."
             raise error.Error(msg)
-        value = runner.get(variable)
+        value = runner.get(var_info)
         with runner.lock:
-            runner.database_vars[variable] = value
+            runner.database_vars[var] = value
 
 
 def thread_handler(runner, items):

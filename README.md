@@ -134,7 +134,7 @@ else
 ```
 
 ## Automation tool
-The scripting language help to define tasks in the `backstage.tasks` file that is intended to be consumed by the automation tool. As an automation tool, **Backstage** exposes a [command line interface](#command-line-interface-and-developer-experience) that allows the user to **discover** available tasks, **run** a task with arguments, read a task [documentation](#embedded-documentation-and-tests), use a [glob](https://en.wikipedia.org/wiki/Glob_(programming))-like syntax to **search** for a task by its name or by a keyword that is part of the documentation of the task, et cetera.
+The scripting language help to define tasks in the `backstage.tasks` file that is intended to be consumed by the automation tool. As an automation tool, **Backstage** exposes a [command line interface](#command-line-interface-and-developer-experience) that allows the user to **discover** available tasks, **run** a task with arguments, read a task [documentation](#embedded-documentation-and-tests), use a [glob](https://en.wikipedia.org/wiki/Glob_(programming))-like syntax to **search** for a task by its name or by a keyword (case-insensitive mode) that is part of the documentation of the task, et cetera.
 
 ### Example 1
 Let's assume that there is a `backstage.tasks` file in the directory `/home/alex/project`. This `backstage.tasks` file contains three public tasks and one private tasks (prefixed with an underscore).
@@ -144,7 +144,7 @@ This example shows how one could use the automation tool to run a task defined i
 ```bash
 $ cd /home/alex/project
 
-$ backstage -t
+$ backstage -c
 Available tasks (3):
     make_coffee  task1  task2
 
@@ -242,21 +242,21 @@ or any useful information.
 # prefix a task name with an underscore
 # to turn it into a private task that
 # won't appear in the list of available tasks
-# when you will type 'backstage --tasks' in the command line
+# when you will type 'backstage --check' in the command line
 ```
 
 As you can guess, a line starting with `#` is a comment. But this is only true inside a task body, because in fact not all sections are tasks as described before: a section can also be an embedded test or documentation.
 
 
 ## Embedded documentation
-You can embed documentation inside the `backstage.tasks` file. To create a documentation for a task, create a section which name is postfixed with `.doc`:
+You can embed documentation inside the `backstage.tasks` file. To create a documentation for a task, create a section which name is postfixed with `.help`:
 
 ```
 [task1]
 pass
 
 
-[task1.doc]
+[task1.help]
 This is the description line.
 
 Usage:
@@ -271,7 +271,7 @@ Options:
 From the **command line**, you can read the documentation of an arbitrary task:
 
 ```bash
-$ backstage -d task1
+$ backstage -h task1
 This is the description line.
 
 Usage:
@@ -298,19 +298,19 @@ assert some_var == some_var
 From the **command line**, you can run the test of an arbitrary task:
 
 ```bash
-$ backstage --check task1
+$ backstage --test task1
 ```
 
 or the tests of a bunch of tasks:
 
 ```bash
-$ backstage --check task1 task2 task3
+$ backstage --test task1 task2 task3
 ```
 
 or run all tests defined in the `backstage.tasks` file:
 
 ```bash
-$ backstage --check
+$ backstage --test
 ```
 
 
@@ -1377,10 +1377,15 @@ config FailFast
 : FailFast -> {R}
 ```
 
+## Debug mode
+Instead of manually setting the `ReportException` configuration option to `1`, you can simply run a task in debug mode:
 
+```bash
+$ backstage -d task arg
+```
 
 ## Tests
-To create a test, just postfix `.test` to the name of a task. Then from the command line, just run the test `backstage --check task`.
+To create a test, just postfix `.test` to the name of a task. Then from the command line, just run the test `backstage --test task`.
 
 ### Example
 ```
@@ -1404,19 +1409,19 @@ Ultimate task automation tool for hackers.
 
 Usage:
     backstage
-    backstage <task> [<argument> ...]
-    backstage <option> [<argument> ...]
+    backstage <task> [<arg> ...]
+    backstage <option> [<arg> ...]
     
 Options:
-    -i, --intro                 Show file introductory text
-    -t, --tasks                 Show the list of tasks
-    -T, --Tasks                 Show the descriptive list of tasks
-    -d, --doc <task>            Show documentation for a specific task
-    -c, --check [<task> ...]    Run tests
-    -C, --Check [<task> ...]    Run tests in debug mode
-    -s, --search <task>         Search for a task by its name
-    -S, --Search <task>         Search for a task by keyword
-    -h, --help                  Show this information page
+    -i, --intro                     Show file introductory text
+    -c, --check                     Show the list of tasks
+    -C, --Check                     Show the descriptive list of tasks
+    -d, --debug <task> [<arg> ...]  Run task in debug mode
+    -t, --test [<task> ...]         Run tests
+    -T, --Test [<task> ...]         Run tests in debug mode
+    -s, --search <task>             Search for a task by its name
+    -S, --Search <task>             Search for a task by keyword
+    -h, --help [<task>]             Show help text
 
     The <task> string can use a glob-like syntax that allows 
     wildcards '*' and '?'. Therefore, 'task1' is identical to 'task*'.
@@ -1531,13 +1536,13 @@ $ pip install buildver
 $ pip install setupinit
 
 # 5- list the tasks available in the `backstage.tasks` file
-$ backstage -t
+$ backstage -c
 Available tasks (11):
     build  check  clean  gendoc  gitcommit  gitinit  gitpush  init
     release  test  upload2pypi
 
 # 6- descriptive list of tasks
-$ backstage -T
+$ backstage -C
 
 # 7- initialize the project
 $ backstage init

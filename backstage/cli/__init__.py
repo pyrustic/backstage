@@ -13,7 +13,8 @@ class Cli:
         self._directory = directory
         self._backstage = Backstage(directory)
         self._tasks = dict()
-        self._docs = dict()
+        self._help_docs = dict()
+        self._tests = dict()
         self._intro = None
         self._setup()
 
@@ -42,24 +43,27 @@ class Cli:
             return
         if name in ("-i", "--intro"):
             self._print_intro(*args)
-        elif name in ("-t", "--tasks"):
-            self._print_tasks_list(*args)
-        elif name in ("-T", "--Tasks"):
-            self._print_descriptive_tasks_list(*args)
-        elif name in ("-d", "--doc"):
-            self._print_task_description(*args)
         elif name in ("-c", "--check"):
-            self._check_tasks(*args)
+            self._print_tasks_list(*args)
         elif name in ("-C", "--Check"):
-            self._check_tasks_debug(*args)
+            self._print_descriptive_tasks_list(*args)
+        elif name in ("-d", "--debug"):
+            if not args:
+                print("Incomplete command, please submit a task name.")
+                return
+            name = args[0]
+            args = args[1:]
+            self._run_task(name, *args, debug=True)
+        elif name in ("-t", "--test"):
+            self._run_tests(*args)
+        elif name in ("-T", "--Test"):
+            self._run_tests(*args, debug=True)
         elif name in ("-s", "--search"):
             self._search_task(*args)
         elif name in ("-S", "--Search"):
             self._search_keyword(*args)
         elif name in ("-h", "--help"):
-            print(text.INTRO)
-            print()
-            print(text.HELP)
+            self._print_help_text(*args)
         else:
             self._run_task(name, *args)
 
@@ -107,8 +111,11 @@ class Cli:
         for key, val in tasks.items():
             if key.startswith("_") or key == "":
                 continue
-            if key.endswith(".doc"):
-                self._docs[key] = val
+            if key.endswith(".help"):
+                self._help_docs[key] = val
+                continue
+            if key.endswith(".test"):
+                self._tests[key] = val
                 continue
             self._tasks[key] = val
         return True
@@ -138,15 +145,25 @@ class Cli:
             except Exception:
                 break
 
-    def _run_task(self, name, *args):
+    def _run_task(self, name, *args, debug=False):
+        if name.endswith(".test"):
+            print("Please use the correct syntax to run a test.")
+            return
+        if name.endswith(".help"):
+            print("Please use the correct syntax to print the help text.")
+            return
         task = self._get_task(name)
         if not task:
             return
-        self._backstage.run(task, args)
+        report_exception = True if debug else False
+        config = {"FailFast": False, "ReportException": report_exception,
+                  "ShowTraceback": False, "TestMode": False}
+        self._backstage.run(task, args, config=config)
 
     def _print_intro(self, *args):
         intro = self._intro if self._intro else list()
-        print("\n".join(intro).strip("- \n"))
+        if intro:
+            print("\n".join(intro).strip("- \n"))
 
     def _print_tasks_list(self, *args):
         keys = self._tasks.keys()
@@ -171,7 +188,7 @@ class Cli:
         keys = self._tasks.keys()
         for key in sorted(keys):
             description = "No description"
-            for line in self._docs.get(key + ".doc", list()):
+            for line in self._help_docs.get(key + ".help", list()):
                 if not line or line.isspace():
                     continue
                 description = line.strip()
@@ -180,26 +197,30 @@ class Cli:
             print("   {}".format(description))
             print()
 
-    def _print_task_description(self, *args):
-        if not args:
-            print("Incomplete command. The task name is missing.")
-            return
-        task = self._get_task(args[0])
-        if not task:
-            return
-        try:
-            doc = self._docs[task + ".doc"]
-        except KeyError as e:
-            msg = "Documentation for '{}' doesn't exist."
-            print(msg.format(task))
+    def _run_tests(self, *args, debug=False):
+        candidates = list()
+        if args:
+            for item in args:
+                task = self._get_task(item)
+                if not task:
+                    return
+                candidates.append(task + ".test")
         else:
-            print("\n".join(doc).strip("- \n"))
-
-    def _check_tasks(self, *args):
-        self._run_tests(*args, debug=False)
-
-    def _check_tasks_debug(self, *args):
-        self._run_tests(*args, debug=True)
+            for task in self._tasks.keys():
+                if task.endswith(".test"):
+                    candidates.append(task)
+        report_exception = True if debug else False
+        config = {"FailFast": False, "ReportException": report_exception,
+                  "ShowTraceback": False, "TestMode": True}
+        n = len(candidates)
+        for i, test in enumerate(candidates):
+            if test not in self._tests:
+                msg = "Test skipped: '{}' doesn't exist."
+                print(msg.format(test))
+            else:
+                self._backstage.run(test, config=config)
+            if i + 1 != n:
+                print()
 
     def _search_task(self, *args):
         if not args:
@@ -239,6 +260,23 @@ class Cli:
         cache = textwrap.indent(cache, "    ")
         print(cache)
 
+    def _print_help_text(self, *args):
+        if not args:
+            print(text.INTRO)
+            print()
+            print(text.HELP)
+            return
+        task = self._get_task(args[0])
+        if not task:
+            return
+        try:
+            doc = self._help_docs[task + ".help"]
+        except KeyError as e:
+            msg = "Help documentation for '{}' doesn't exist."
+            print(msg.format(task))
+        else:
+            print("\n".join(doc).strip("- \n"))
+
     def _get_task(self, pattern):
         if "*" in pattern or "?" in pattern:
             results = self._find_tasks_by_pattern(pattern)
@@ -274,13 +312,13 @@ class Cli:
         keyword = keyword.replace("?", r".")
         keyword = keyword.replace("*", r"[\S]*?")
         results = list()
-        for task, body in self._docs.items():
+        for task, body in self._help_docs.items():
             words = list()
             for line in body:
                 for word in line.split():
                     words.append(word)
             for word in words:
-                if re.fullmatch(keyword, word):
+                if re.fullmatch(keyword, word, re.IGNORECASE):
                     cache = task.split(".")
                     del cache[-1]
                     cache = ".".join(cache)
@@ -288,33 +326,6 @@ class Cli:
                         results.append(cache)
                     break
         return results
-
-    def _run_tests(self, *args, debug=False):
-        candidates = list()
-        if args:
-            for item in args:
-                task = self._get_task(item)
-                if not task:
-                    return
-                candidates.append(task + ".test")
-        else:
-            for task in self._tasks.keys():
-                if task.endswith(".test"):
-                    candidates.append(task)
-        report_exception = show_traceback = False
-        if debug:
-            report_exception = show_traceback = True
-        config = {"FailFast": False, "ReportException": report_exception,
-                  "ShowTraceback": show_traceback, "TestMode": True}
-        n = len(candidates)
-        for i, test in enumerate(candidates):
-            if test not in self._tasks:
-                msg = "Test skipped: '{}' doesn't exist."
-                print(msg.format(test))
-            else:
-                self._backstage.run(test, config=config)
-            if i + 1 != n:
-                print()
 
 
 def complete_callback(text, state, words=None):

@@ -6,19 +6,19 @@ Ultimate task automation tool for hackers.\
 HELP = """\
 Usage:
     backstage
-    backstage <task> [<argument> ...]
-    backstage <option> [<argument> ...]
+    backstage <task> [<arg> ...]
+    backstage <option> [<arg> ...]
     
 Options:
-    -i, --intro                 Show file introductory text
-    -t, --tasks                 Show the list of tasks
-    -T, --Tasks                 Show the descriptive list of tasks
-    -d, --doc <task>            Show documentation for a specific task
-    -c, --check [<task> ...]    Run tests
-    -C, --Check [<task> ...]    Run tests in debug mode
-    -s, --search <task>         Search for a task by its name
-    -S, --Search <task>         Search for a task by keyword
-    -h, --help                  Show this information page
+    -i, --intro                     Show file introductory text
+    -c, --check                     Show the list of tasks
+    -C, --Check                     Show the descriptive list of tasks
+    -d, --debug <task> [<arg> ...]  Run task in debug mode
+    -t, --test [<task> ...]         Run tests
+    -T, --Test [<task> ...]         Run tests in debug mode
+    -s, --search <task>             Search for a task by its name
+    -S, --Search <task>             Search for a task by keyword
+    -h, --help [<task>]             Show help text
 
     The <task> string can use a glob-like syntax that allows 
     wildcards '*' and '?'. Therefore, 'task1' is identical to 'task*'.

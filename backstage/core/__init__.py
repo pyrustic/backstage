@@ -550,7 +550,7 @@ def spawn(runner, items):
     if not command or command.isspace():
         raise error.InterpretationError
     stdin = stdout = stderr = None
-    if not captured:  # TODO: allow 'capture' to work with STDIN (probably will need to update subrun too)
+    if not captured:
         stdin = util.get_stream(runner, "STDIN")
         stdout = util.get_stream(runner, "STDOUT")
         stderr = util.get_stream(runner, "STDERR")

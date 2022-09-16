@@ -494,6 +494,12 @@ def cast_datetime(value, src, dest):
 def spawn(runner, command, input_data, stdin, stdout, stderr, captured=False):
     timeout = runner.get("TIMEOUT")
     timeout = timeout if timeout else None
+    if timeout is not None:
+        try:
+            timeout = int(timeout)
+        except Exception:
+            msg = "TIMEOUT should be a number or an empty string."
+            raise error.Error(msg)
     try:
         if captured:
             info = subrun.capture(command, input=input_data, timeout=timeout)
@@ -509,6 +515,12 @@ def spawn(runner, command, input_data, stdin, stdout, stderr, captured=False):
 def spawn_pipeline(runner, commands, input_data, stdin, stdout, stderr, captured=False):
     timeout = runner.get("TIMEOUT")
     timeout = timeout if timeout else None
+    if timeout is not None:
+        try:
+            timeout = int(timeout)
+        except Exception:
+            msg = "TIMEOUT should be a number or an empty string."
+            raise error.Error(msg)
     try:
         if captured:
             info = subrun_pipeline.capture(*commands, input=input_data, cwd=os.getcwd(),

@@ -1483,6 +1483,25 @@ Inside the script file, you don't have to type `python3` in a command to spawn t
 $ python -m my.package.module
 ```
 
+## Shell
+**Backstage** doesn't rely on any **Shell**. But you can still pipe commands !
+
+Example, if you want to change the current working directory:
+```
+[task]
+# instead of doing this
+$ cd {HOME}
+
+# use the built-in 'cd'
+cd HOME
+
+# you can still spawn programs commonly used in the shell
+$ ls
+
+# or make this complex stuff (successfully performed on Ubuntu)
+$ python -m this | tail --lines=+3 | sort
+```
+
 ## Data cache
 **Backstage** stores data in an automatically created directory `.backstage` located in the current working directory. Inside this directory you can find the `execution.log` and `database.json` files.
 

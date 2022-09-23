@@ -4,7 +4,6 @@ import sys
 import re
 import time
 import shlex
-import string
 import importlib
 import random
 import subprocess
@@ -217,13 +216,33 @@ def scan_var(variable):
     access = access_spec = None
     for item, name in ((key, "key"), (index, "index")):
         if item is not None:
-            if name == "index":
-                item = int(item)
             access = name
             access_spec = item
     info = {"namespace": namespace, "var": base,
             "access": access, "access_spec": access_spec}
     return info
+
+
+def do_var_access(variable, access, spec):
+    if access == "index":
+        if ":" not in spec:
+            return variable[int(spec)]
+        cache = spec.split(":")
+        if len(cache) > 2:
+            msg = "There is more than 1 colon ':' in the index spec."
+            raise error.Error(msg)
+        left, right = cache
+        left = left if left else 0
+        left = left if left else 0
+        if not right:
+            return variable[int(left):]
+        right = int(right)
+        return variable[int(left):int(right)]
+    elif access == "key":
+        return variable[spec]
+    else:
+        msg = "Unknown variable access ''."
+        raise error.Error(msg.format(access))
 
 
 def match_resource(path, regex=None, field=None, preposition=None,

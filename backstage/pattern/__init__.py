@@ -2,7 +2,7 @@ from enum import Enum
 
 
 # namespace, base, index, key
-VARIABLE_PATTERN = r"""\A(((?P<namespace>L|G|D):)|)(?P<base>[\S]+?)((\[(?P<index>-?[0-9]+)\])|(\.(?P<key>[\S]+))|)\Z"""
+VARIABLE_PATTERN = r"""\A(((?P<namespace>L|G|D):)|)(?P<base>[\S]+?)((\[(?P<index>[0-9:-]+)\])|(\.(?P<key>[\S]+))|)\Z"""
 
 
 # var1, comparison1, var2, logic, var3, comparison2, var4

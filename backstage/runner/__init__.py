@@ -237,7 +237,7 @@ class Runner:
         except KeyError:
             raise error.VariableError(var)
         if access:
-            return val[access_spec]
+            return util.do_var_access(val, access, access_spec)
         return val
 
     def set(self, variable, value):
@@ -249,10 +249,6 @@ class Runner:
         var = var_info["var"]
         access = var_info["access"]
         access_spec = var_info["access_spec"]
-        #if access:
-        #    data = self.get(var_info)
-        #    data[access_spec] = value
-        #    return
         if namespace == "G":
             with self._lock:
                 self._global_vars[var] = value
@@ -264,6 +260,7 @@ class Runner:
                 msg = "New environment variables can't be created by the user."
                 raise error.Error(msg)
             if access:
+                access_spec = int(access_spec) if access == "index" else access_spec
                 self._local_vars[var][access_spec] = value
             else:
                 self._local_vars[var] = value

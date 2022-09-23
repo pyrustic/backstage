@@ -535,6 +535,10 @@ set var (list) = `{x} green blue`
 set value = {var[0]}
 # value -> red
 
+# get the value of elements from index 1 to the end
+set value = {var[1:]}
+# value -> green blue
+
 ---
 
 # let's play with a dict

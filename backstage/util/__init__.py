@@ -601,7 +601,7 @@ def get_content_iterator(runner, element, variable, tag):
 
 def iterate_content(content, spec):
     if isinstance(content, pathlib.Path):
-        filename = content.resolve()
+        filename = str(content.resolve())
         for x in _iterate_file(filename, spec):
             yield x
     elif spec == "char":

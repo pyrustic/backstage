@@ -34,9 +34,11 @@ This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io
 - [Installation](#installation)
 
 # Overview
-**Backstage** is a cross-platform **automation tool** that looks for a `backstage.tasks` file in the current working directory to run a specific task defined in that file on demand. The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format inspired by the [INI file](https://en.wikipedia.org/wiki/INI_file) format.
+**Backstage** is a cross-platform **automation tool** that looks for a `backstage.tasks` file in the current working directory to run a specific task defined in that file on demand. A task can be a sequence or pipeline of processes to be spawned, instructions for performing file and directory manipulation, or something more sophisticated.
 
- Using an eponymous **three-speed scripting language** designed for the automation tool, the programmer can, inside the `backstage.tasks` file, define, coordinate and use the various resources at his disposal to automate things.
+The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format inspired by the [INI file](https://en.wikipedia.org/wiki/INI_file) format.
+
+Using an eponymous **three-speed scripting language** designed for the automation tool, the programmer can, inside the `backstage.tasks` file, define, coordinate and use the various resources at his disposal to automate things.
 
 The three-speed scripting language concept is inspired from the three forward gear ratios of early automobiles [transmission system](https://en.wikipedia.org/wiki/Manual_transmission). In the following subsections, we will explore each metaphorical gear of the **Backstage** scripting language, then we will briefly expose the automation tool itself.
 

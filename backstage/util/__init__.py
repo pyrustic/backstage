@@ -10,6 +10,7 @@ import subprocess
 import pathlib
 import shutil
 import shared
+import jesth
 import oscan
 import subrun
 from datetime import datetime
@@ -37,8 +38,13 @@ def scan(line):
 
 
 def get_tasks(directory):
-    return shared.jesth_readonly(constant.BASENAME, default=None,
-                                 directory=directory)
+    path = os.path.join(directory, constant.BASENAME)
+    document = jesth.read(path)
+    tasks = OrderedDict()
+    for section in document.sections:
+        header, body = section.header, section.body
+        tasks[header] = body
+    return tasks
 
 
 def create_env_vars(arguments, tempdir):

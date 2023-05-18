@@ -4,15 +4,12 @@ import os.path
 import sys
 import time
 import textwrap
-import subprocess
 import traceback
 import random
 import shlex
-import subrun
 import oscan
 from threading import Thread
 from tempfile import TemporaryDirectory
-from subrun import pipeline
 from backstage import error, util
 from backstage import core
 from backstage import constant

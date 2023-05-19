@@ -36,7 +36,7 @@ This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io
 # Overview
 **Backstage** is a cross-platform **automation tool** that looks for a `backstage.tasks` file in the current working directory to run a specific task defined in that file on demand. A task can be a sequence or pipeline of processes to be spawned, instructions for performing file and directory manipulation, or something more sophisticated.
 
-The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format inspired by the [INI file](https://en.wikipedia.org/wiki/INI_file) format.
+The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format that acts like a broken [INI file](https://en.wikipedia.org/wiki/INI_file) parser that only extract sections each made of a header and a body which is just a list of lines.
 
 Using an eponymous **three-speed scripting language** designed for the automation tool, the programmer can, inside the `backstage.tasks` file, define, coordinate and use the various resources at his disposal to automate things.
 
@@ -222,7 +222,7 @@ There is more to talk about **Backstage**, like the ability to embed documentati
 In the following sections, we will explore this project in depth. You can also jump to the [demo](#demo) to start playing with **Backstage** !
 
 # Structure of the script file
-As stated in the [Overview](#overview) section, a `backstage.tasks` file follows the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format inspired by the [INI file](https://en.wikipedia.org/wiki/INI_file) format.
+As stated in the [Overview](#overview) section, a `backstage.tasks` file is basically a [JesthFile](https://github.com/pyrustic/jesth).
 
 In a `backstage.tasks` file, a section represents a task. The section title is the name of the task and the section body is made of commands to run and the constructs of the **Backstage** scripting language. A valid task name is an alphanumeric string that can contains an underscore.
 

@@ -36,7 +36,7 @@ This project is part of the [Pyrustic Open Ecosystem](https://pyrustic.github.io
 # Overview
 **Backstage** is a cross-platform **automation tool** that looks for a `backstage.tasks` file in the current working directory to run a specific task defined in that file on demand. A task can be a sequence or pipeline of processes to be spawned, instructions for performing file and directory manipulation, or something more sophisticated.
 
-The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **e**xtract **s**ections **t**hen **h**ack) file format that acts like a broken [INI file](https://en.wikipedia.org/wiki/INI_file) parser that only extract sections each made of a header and a body which is just a list of lines.
+The `backstage.tasks` file uses the [Jesth](https://github.com/pyrustic/jesth) (**J**ust **E**xtract **S**ections **T**hen **H**ack) file format that acts like a broken [INI file](https://en.wikipedia.org/wiki/INI_file) parser that only extract sections each made of a header and a body which is just a list of lines.
 
 Using an eponymous **three-speed scripting language** designed for the automation tool, the programmer can, inside the `backstage.tasks` file, define, coordinate and use the various resources at his disposal to automate things.
 

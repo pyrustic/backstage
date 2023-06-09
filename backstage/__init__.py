@@ -2,7 +2,7 @@
 import os
 import os.path
 import sys
-import shared
+import json
 from threading import Lock
 from backstage import util
 from backstage.pattern import Pattern
@@ -63,8 +63,9 @@ class Backstage:
         except Exception as e:
             pass
         # store data
-        shared.json_write("database.json", self._database_vars,
-                          directory=self._cache_dir)
+        filename = os.path.join(self._cache_dir, "database.json")
+        with open(filename, "w") as file:
+            json.dump(self._database_vars, file)
         # store execution log
         util.save_execution_log(self, self._execution_log)
         return runner
@@ -78,13 +79,22 @@ class Backstage:
     def _setup(self):
         # allow python modules imports from backstage.tasks
         sys.path.insert(0, self._directory)
+        # create cache_dir
+        db_filename = os.path.join(self._cache_dir, "database.json")
+        if not os.path.isdir(self._cache_dir):
+            try:
+                os.makedirs(self._cache_dir)
+            except Exception as e:
+                pass
+            with open(db_filename, "w") as file:
+                json.dump(self._database_vars, file)
         # load tasks
         tasks = util.get_tasks(self._directory)
         if not tasks:
             return
         self._tasks = {key: val for key, val in tasks.items() if not key.endswith(".doc")}
         # load stored vars
-        database_vars = shared.json_readonly("database.json",
-                                                   default=dict(),
-                                                   directory=self._cache_dir)
+        
+        with open(db_filename, "r") as file:
+            database_vars = json.load(file)
         self._database_vars = database_vars if database_vars else dict()

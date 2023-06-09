@@ -9,7 +9,6 @@ import random
 import subprocess
 import pathlib
 import shutil
-import shared
 import jesth
 import oscan
 import subrun
